@@ -3,6 +3,24 @@
 # Date: Aug. 12, 2024
 # to run: set wd to main repo page (Solivana_DS1_Final folder)
 
+eda <- function(sleep_data){
+  #summarize mean age by gender
+  sleep_data.age <- sleep_data %>% 
+    group_by(Gender) %>%
+    summarise(mean_age = mean(Age, na.rm = T))
+  
+  ggplot(data = sleep_data.age, mapping = aes(x = Gender, y= mean_age))+
+    geom_col()
+  
+  #summarize BMI by gender
+  sleep_data.BMI <- sleep_data %>% 
+    group_by(Gender) %>%
+    summarise(mean_BMI = mean(BMI, na.rm = T))
+  
+  ggplot(data = sleep_data.BMI, mapping = aes(x = Gender, y= mean_BMI))+
+    geom_col()
+}
+
 #initialize libaries
 library(tidyverse)
 library(ggplot2)
@@ -56,3 +74,7 @@ lapply(tab, prop.table)
 
 # PSS has 30% missingness, may make sense to exclude from the analysis
 
+
+#Description of relevant data
+eda(sleep_data)
+  
