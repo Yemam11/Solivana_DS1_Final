@@ -129,7 +129,7 @@ imputed_sleep_data <- mice(sleep_data,
                            seed = 5)
 
 #check one of the imputed datasets to ensure there are no missing values
-first_imputation <- complete(imputed_sleep_data, action = 1)
+first_imputation <- complete(imputed_sleep_data, action = "Long")
 
 #NO NAs, negative values to be discussed in the discussion section
 summary(first_imputation)
@@ -158,6 +158,6 @@ summary(pool(ESS_model))
 #===============Create Models for PCS and MCS===================#
 
 # use lm of AIS, BSS, ESS to predict PCS/MCS
-# Analysis: 
+# Analysis: create an lm %>% effect_plot from jtools?
 
 
