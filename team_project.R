@@ -168,7 +168,7 @@ summary(first_imputation)
 #calculate p; number of predictors
 # for logistic regression: p<m/15 where m = number of events
 #calculate:
-max_predictors <- as.integer(sleep_data %>%  count(ESS) %>% filter(ESS == 1) %>% pull(n)/15)
+max_predictors_ESS <- as.integer(sleep_data %>%  count(ESS) %>% filter(ESS == 1) %>% pull(n)/15)
 
 #initial model with all predictors, we will research and figure out what to include/not to include
 ESS_model <- with(imputed_sleep_data,
@@ -176,17 +176,38 @@ ESS_model <- with(imputed_sleep_data,
 
 
 #extract models from the mice object 
-models <- getfit(ESS_model)
+ESS_models <- getfit(ESS_model)
 #calculate AICs for each model
-AICs <- t(sapply(models, extractAIC))
+ESS_AICs <- t(sapply(ESS_models, extractAIC))
 
 #get the average AIC
-mean_AIC <- mean(AICs[,2])
+ESS_mean_AIC <- mean(ESS_AICs[,2])
 
 #summarize the models
 summary(pool(ESS_model))
 
 #####Logistic regression model for BSS######
+
+#calculate p; number of predictors
+# for logistic regression: p<m/15 where m = number of events
+#calculate:
+max_predictors_BSS <- as.integer(sleep_data %>%  count(Berlin.Sleepiness.Scale) %>% filter(Berlin.Sleepiness.Scale == 1) %>% pull(n)/15)
+
+#initial model with all predictors, we will research and figure out what to include/not to include
+BSS_model <- with(imputed_sleep_data,
+                  glm(Berlin.Sleepiness.Scale ~ Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis + Recurrence.of.disease + Rejection.graft.dysfunction+ Any.fibrosis + Renal.Failure + Depression + Corticoid, family = "binomial"))
+
+
+#extract models from the mice object 
+BSS_models <- getfit(BSS_model)
+#calculate AICs for each model
+BSS_AICs <- t(sapply(BSS_models, extractAIC))
+
+#get the average AIC
+BSS_mean_AIC <- mean(BSS_AICs[,2])
+
+#summarize the models
+summary(pool(BSS_model))
 
 #===============Create Models for PCS and MCS===================#
 
