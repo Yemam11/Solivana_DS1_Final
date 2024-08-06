@@ -209,6 +209,31 @@ BSS_mean_AIC <- mean(BSS_AICs[,2])
 #summarize the models
 summary(pool(BSS_model))
 
+
+#####Logistic regression model for AthensSS######
+
+#calculate p; number of predictors
+# for logistic regression: p<m/15 where m = number of events
+#calculate:
+max_predictors_AthensSS <- as.integer(sleep_data %>%  count(AthensSS) %>% filter(AthensSS == 1) %>% pull(n)/15)
+
+#initial model with all predictors, we will research and figure out what to include/not to include
+AthensSS_model <- with(imputed_sleep_data,
+                  glm(AthensSS ~ Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis + Recurrence.of.disease + Rejection.graft.dysfunction+ Any.fibrosis + Renal.Failure + Depression + Corticoid, family = "binomial"))
+
+
+#extract models from the mice object 
+AthensSS_models <- getfit(AthensSS_model)
+#calculate AICs for each model
+AthensSS_AICs <- t(sapply(AthensSS_models, extractAIC))
+
+#get the average AIC
+AthensSS_mean_AIC <- mean(AthensSS_AICs[,2])
+
+#summarize the models
+summary(pool(AthensSS_model))
+
+
 #===============Create Models for PCS and MCS===================#
 
 # use lm of AIS, BSS, ESS to predict PCS/MCS
