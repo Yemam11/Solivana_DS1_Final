@@ -152,7 +152,7 @@ imputed_sleep_data <- mice(sleep_data,
                            seed = 5)
 
 #check one of the imputed datasets to ensure there are no missing values
-first_imputation <- complete(imputed_sleep_data, action = "Long")
+first_imputation <- complete(imputed_sleep_data, action = 1)
 
 #NO NAs, negative values to be discussed in the discussion section
 summary(first_imputation)
@@ -163,20 +163,30 @@ summary(first_imputation)
 #Create models that predict sleep disturbance based on predictor variables
 # Research which variables are effective predictors of each model
 
+#####Logistic regression model for ESS######
+
 #calculate p; number of predictors
-# for linear regression: p<m/15 where m = n
+# for logistic regression: p<m/15 where m = number of events
 #calculate:
-max_predictors <- as.integer(nrow(sleep_data)/15)
+max_predictors <- as.integer(sleep_data %>%  count(ESS) %>% filter(ESS == 1) %>% pull(n)/15)
 
 #initial model with all predictors, we will research and figure out what to include/not to include
 ESS_model <- with(imputed_sleep_data,
-                  lm(Epworth.Sleepiness.Scale ~ Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis + Recurrence.of.disease + Rejection.graft.dysfunction+ Any.fibrosis + Renal.Failure + Depression + Corticoid, data = imputed_sleep_data))
+                  glm(ESS ~ Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis + Recurrence.of.disease + Rejection.graft.dysfunction+ Any.fibrosis + Renal.Failure + Depression + Corticoid, family = "binomial"))
 
+
+#extract models from the mice object 
+models <- getfit(ESS_model)
+#calculate AICs for each model
+AICs <- t(sapply(models, extractAIC))
+
+#get the average AIC
+mean_AIC <- mean(AICs[,2])
 
 #summarize the models
 summary(pool(ESS_model))
 
-# Repeat this process for AIS and BSS
+#####Logistic regression model for BSS######
 
 #===============Create Models for PCS and MCS===================#
 
