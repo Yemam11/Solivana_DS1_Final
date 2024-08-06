@@ -60,8 +60,31 @@ sleep_data <- sleep_data %>%
 #Quick glimplse of the data
 summary(sleep_data)
 
+#identify cutoffs for sleepiness scales, so we can binarize and fit glm models to predict yes or no outcomes
+
+# Athens cutoff - 5.5 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7730071/#:~:text=A%20sum%20score%20is%20calculated,or%20more)%20%5B8%5D.
+
+#ESS cutoff - 10 from midterm instructions
+
+#BSS is alrealdy binary
+
+#add columns and assign binary input
+sleep_data <- sleep_data %>% 
+  mutate(
+    ESS = case_when(
+    Epworth.Sleepiness.Scale > 10 ~ 1,
+    Epworth.Sleepiness.Scale <= 10 ~ 0
+    ),
+    AthensSS = case_when(
+      Athens.Insomnia.Scale > 5.5 ~ 1,
+      Athens.Insomnia.Scale <= 5.5 ~ 0
+    )
+  )
+
 #convert categorical data to factors
-cols <- c("Gender", "Liver.Diagnosis", "Recurrence.of.disease", "Rejection.graft.dysfunction", "Any.fibrosis", "Renal.Failure", "Depression",  "Corticoid", "Berlin.Sleepiness.Scale")
+cols <- c("Gender", "Liver.Diagnosis", "Recurrence.of.disease", "Rejection.graft.dysfunction", "Any.fibrosis", "Renal.Failure", "Depression",  "Corticoid", "Berlin.Sleepiness.Scale", "ESS", "AthensSS")
+
+
 
 #convert the specified columns to factors
 sleep_data[cols] <- lapply(sleep_data[cols], as.factor)
