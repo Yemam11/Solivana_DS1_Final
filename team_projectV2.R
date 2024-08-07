@@ -70,6 +70,11 @@ sleep_data[cols] <- lapply(sleep_data[cols], as.factor)
 # make sure there is nothing there that shouldnt be there
 apply(sleep_data[cols], 2, unique)
 
+#Scale goes from 0-24, max should not be 26
+summary(sleep_data$Epworth.Sleepiness.Scale)
+#remove any values greater than 24
+sleep_data$Epworth.Sleepiness.Scale[sleep_data$Epworth.Sleepiness.Scale > 24]<- NA
+
 #identify missingness in the data
 tab <- apply(ifelse(is.na(sleep_data), "Missing", "Not Missing"), 2, table)
 
@@ -114,6 +119,41 @@ eda(sleep_data)
 # to estimate the prevalence, identify cutoffs in the data
 # identify percentage of patients that have sleep disturbance according to each metric
 
+#create a binary metric and add to the table based on cutoff values
+prevalence <- sleep_data %>% mutate(
+  ESS = case_when(
+    Epworth.Sleepiness.Scale > 10 ~ 1,
+    Epworth.Sleepiness.Scale <= 10 ~ 0
+  ),
+  AthensSS = case_when(
+    Athens.Insomnia.Scale > 5.5 ~ 1,
+    Athens.Insomnia.Scale <= 5.5 ~ 0
+  ),
+  BSS = as.integer(Berlin.Sleepiness.Scale)
+) %>% 
+  select(ESS, BSS, AthensSS)
+
+#determine the prevalence
+
+rownames()
+prevalences <- data.frame()
+rownames(prevalences)
+for (name in names(prevalence)) {
+  prevalence_temp <- prevalence %>%
+    select(all_of(name)) %>% 
+    na.omit()
+  
+  prevalence_temp <- prevalence_temp %>%
+    summarise(prev = sum(prevalence_temp[[all_of(name)]]),
+              total = n(),
+              percent = prev/total*100)
+  
+  prevalences <- base::rbind(prevalences, prevalence_temp)
+  
+}
+
+row.names(prevalences) <- names(prevalence)
+
 
 #===============Imputation===================#
 # we need to do something to deal with the missing data
@@ -148,12 +188,14 @@ max_predictors_ESS <- as.integer(length(sleep_data$Epworth.Sleepiness.Scale)/15)
 
 #initial model with all predictors, we will research and figure out what to include/not to include
 ESS_model <-lm(Epworth.Sleepiness.Scale ~ Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis + Recurrence.of.disease + Rejection.graft.dysfunction+ Any.fibrosis + Renal.Failure + Depression + Corticoid,
-                data = imputed_sleep_data)
+               data = imputed_sleep_data)
 
 
 summary(ESS_model)
 
+ESS_predictions <- fitted(ESS_model)
 
+#plot against each of the predictors, hold all other variables the same, show plots to show how the predictor influences the response
 
 #####Logistic regression model for BSS######
 
@@ -188,6 +230,8 @@ summary(AthensSS_model)
 #===============Create Models for PCS and MCS===================#
 
 # use lm of AIS, BSS, ESS to predict PCS/MCS
+
+
 # Analysis: plot fitted values, compared to original values, plot fitted compared to each predictor
 
 
