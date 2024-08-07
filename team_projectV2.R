@@ -3,6 +3,25 @@
 # Date: Aug. 12, 2024
 # to run: set wd to main repo page (Solivana_DS1_Final folder)
 
+#### Data generation function ####
+generate_data(response, predictor, data){
+  
+  #alter all other columns to be the mean
+  temp_data <- data %>% 
+    select(!c(predictor, response))
+  
+  data <- data %>% 
+    select(predictor, response)
+  
+  cols <- names(temp_data)
+  for(column in cols){
+    temp_data[[column]] <- mean(temp_data[[column]], na.rm = T)
+  }
+  
+  cbind()
+}
+
+#### EDA Function ####
 eda <- function(sleep_data){
   #summarize mean age by gender
   sleep_data.age <- sleep_data %>% 
@@ -34,7 +53,7 @@ sleep_data <- read.csv("datasets/project_data.csv", header = T)
 
 names(sleep_data)
 
-#clean the data
+#### Data Cleaning ####
 
 #select relevant columns
 sleep_data <- sleep_data %>% 
@@ -114,8 +133,7 @@ fluxplot(sleep_data, labels = F)
 #Description of relevant data
 eda(sleep_data)
 
-
-#===============Prevalence of sleep disturbance===================#
+#### Prevalence of sleep disturbance ####
 # to estimate the prevalence, identify cutoffs in the data
 # identify percentage of patients that have sleep disturbance according to each metric
 
@@ -141,6 +159,8 @@ prevalences <- data.frame()
 rownames(prevalences)
 
 #loop through the metrics, summarize them and append to empty df
+
+#FIX THIS SHIT
 for (name in names(prevalence)) {
   prevalence_temp <- prevalence %>%
     select(all_of(name)) %>% 
@@ -159,7 +179,7 @@ for (name in names(prevalence)) {
 row.names(prevalences) <- names(prevalence)
 
 
-#===============Imputation===================#
+#### Imputation ####
 # we need to do something to deal with the missing data
 # single imputation
 
@@ -172,6 +192,7 @@ imputed_sleep_data <- mice(sleep_data,
                            maxit = 1,
                            seed = 10)
 
+
 #check one of the imputed datasets to ensure there are no missing values
 imputed_sleep_data <- complete(imputed_sleep_data, action = 1)
 
@@ -183,11 +204,13 @@ summary(imputed_sleep_data)
 #Create models that predict sleep disturbance based on predictor variables
 # Research which variables are effective predictors of each model
 
-#####Linear regression model for ESS######
+##### Linear regression model for ESS######
 
 #calculate p; number of predictors
 # for logistic regression: p<m/15 where m = number of events
 #calculate:
+
+#ask which dataset to use (imputed vs not)
 max_predictors_ESS <- as.integer(length(sleep_data$Epworth.Sleepiness.Scale)/15)
 
 #initial model with all predictors, we will research and figure out what to include/not to include
@@ -201,7 +224,7 @@ ESS_predictions <- fitted(ESS_model)
 
 #plot against each of the predictors, hold all other variables the same, show plots to show how the predictor influences the response
 
-#####Logistic regression model for BSS######
+##### Logistic regression model for BSS ######
 
 #calculate p; number of predictors
 # for logistic regression: p<m/15 where m = number of events
@@ -218,7 +241,7 @@ BSS_model <- glm(Berlin.Sleepiness.Scale ~ Gender + Age + BMI + Time.from.transp
 #Summary
 summary(BSS_model)
 
-#####Linear regression model for AthensSS######
+##### Linear regression model for AthensSS ######
 
 #calculate p; number of predictors
 # for logistic regression: p<m/15 where m = number of events
@@ -231,7 +254,7 @@ AthensSS_model <-lm(Athens.Insomnia.Scale ~ Gender + Age + BMI + Time.from.trans
 
 summary(AthensSS_model)
 
-#===============Create Models for PCS and MCS===================#
+#### Models for PCS and MCS ####
 
 # use lm of AIS, BSS, ESS to predict PCS/MCS
 PCS_model <- lm(SF36.PCS ~ Epworth.Sleepiness.Scale + Berlin.Sleepiness.Scale + Athens.Insomnia.Scale,
@@ -243,6 +266,13 @@ MCS_model <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale + Berlin.Sleepiness.Scale + 
                 data = imputed_sleep_data)
 
 summary(PCS_model)
-# Analysis: plot fitted values, compared to original values, plot fitted compared to each predictor
 
 
+#Create a dataset with relevant metrics for the analysis
+Q4_sleep_data <- imputed_sleep_data %>% 
+  select(SF36.MCS, SF36.MCS, Epworth.Sleepiness.Scale, Berlin.Sleepiness.Scale, Athens.Insomnia.Scale)
+
+
+### Analysis: plot fitted values, compared to original values, plot fitted compared to each predictor
+
+# Create new data: for each predictor, set all other predictors to the mean/reference
