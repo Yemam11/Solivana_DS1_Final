@@ -135,9 +135,12 @@ prevalence <- sleep_data %>% mutate(
 
 #determine the prevalence
 
+#create empty data frame
 rownames()
 prevalences <- data.frame()
 rownames(prevalences)
+
+#loop through the metrics, summarize them and append to empty df
 for (name in names(prevalence)) {
   prevalence_temp <- prevalence %>%
     select(all_of(name)) %>% 
@@ -152,6 +155,7 @@ for (name in names(prevalence)) {
   
 }
 
+#set the row names of the df
 row.names(prevalences) <- names(prevalence)
 
 
@@ -160,7 +164,7 @@ row.names(prevalences) <- names(prevalence)
 # single imputation
 
 #we cant do it all at once, since some data are binary, some are unordered and some are cont. 
-#impute continuous data with linear regression + stochastic, logistic regression for binary, and polytomous logistic regression for unordered factors
+#impute continuous data with linear regression + stochastic, logistic regression + stochasticity for binary
 imputed_sleep_data <- mice(sleep_data,
                            defaultMethod = c("norm.nob", "logreg", "polyreg", "polyr"),
                            m = 1,
@@ -204,6 +208,7 @@ ESS_predictions <- fitted(ESS_model)
 #calculate:
 max_predictors_BSS <- as.integer(sleep_data %>%  count(Berlin.Sleepiness.Scale) %>% filter(Berlin.Sleepiness.Scale == 1) %>% pull(n)/15)
 
+
 #initial model with all predictors, we will research and figure out what to include/not to include
 BSS_model <- glm(Berlin.Sleepiness.Scale ~ Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis + Recurrence.of.disease + Rejection.graft.dysfunction+ Any.fibrosis + Renal.Failure + Depression + Corticoid,
                  family = "binomial",
@@ -224,14 +229,20 @@ max_predictors_AthensSS <- as.integer(length(sleep_data$Athens.Insomnia.Scale)/1
 AthensSS_model <-lm(Athens.Insomnia.Scale ~ Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis + Recurrence.of.disease + Rejection.graft.dysfunction+ Any.fibrosis + Renal.Failure + Depression + Corticoid,
                data = imputed_sleep_data)
 
-
 summary(AthensSS_model)
 
 #===============Create Models for PCS and MCS===================#
 
 # use lm of AIS, BSS, ESS to predict PCS/MCS
+PCS_model <- lm(SF36.PCS ~ Epworth.Sleepiness.Scale + Berlin.Sleepiness.Scale + Athens.Insomnia.Scale,
+                data = imputed_sleep_data)
 
+summary(PCS_model)
 
+MCS_model <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale + Berlin.Sleepiness.Scale + Athens.Insomnia.Scale,
+                data = imputed_sleep_data)
+
+summary(PCS_model)
 # Analysis: plot fitted values, compared to original values, plot fitted compared to each predictor
 
 
