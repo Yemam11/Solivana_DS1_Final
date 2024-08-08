@@ -100,10 +100,6 @@ fluxplot(sleep_data, labels = F)
 #Description of relevant data
 eda(sleep_data)
 
-<<<<<<< HEAD
-=======
-
->>>>>>> e8647ae043e3b9e351fd62967a43214ccb1fc7af
 #### Prevalence of sleep disturbance ####
 # to estimate the prevalence, identify cutoffs in the data
 # identify percentage of patients that have sleep disturbance according to each metric
@@ -130,11 +126,6 @@ rownames(prevalences) <- NULL
 
 #loop through the metrics, summarize them and append to empty df
 
-<<<<<<< HEAD
-
-=======
-#FIX THIS SHIT
->>>>>>> e8647ae043e3b9e351fd62967a43214ccb1fc7af
 for (name in names(prevalence)) {
   prevalence_temp <- prevalence %>%
     select(all_of(name)) %>% 
@@ -153,10 +144,6 @@ for (name in names(prevalence)) {
 row.names(prevalences) <- names(prevalence)
 prevalences
 
-<<<<<<< HEAD
-=======
-
->>>>>>> e8647ae043e3b9e351fd62967a43214ccb1fc7af
 #### Imputation ####
 # we need to do something to deal with the missing data
 # single imputation
@@ -248,6 +235,7 @@ MCS_model <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale + Berlin.Sleepiness.Scale + 
 
 summary(MCS_model)
 
+
 #Create a dataset with relevant metrics for the analysis
 Q4_sleep_data <- imputed_sleep_data %>% 
   select(SF36.MCS, SF36.MCS, Epworth.Sleepiness.Scale, Berlin.Sleepiness.Scale, Athens.Insomnia.Scale)
@@ -256,7 +244,6 @@ Q4_sleep_data <- imputed_sleep_data %>%
 ### Analysis: plot fitted values, compared to original values, plot fitted compared to each predictor
 
 # Create new data: for each predictor, set all other predictors to the mean/reference
-
 
 ### Analysis: plot fitted values, compared to original values, plot fitted compared to each predictor
 
