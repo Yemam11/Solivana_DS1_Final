@@ -13,6 +13,7 @@ library(mice)
 library(glue)
 library(gtsummary)
 library(gt)
+library(car)
 
 #load functions
 source("functions.R")
@@ -178,6 +179,7 @@ summary(imputed_sleep_data)
 
 #Create models that predict sleep disturbance based on predictor variables
 # Research which variables are effective predictors of each model
+# Research shows that Age, Gender, BMI, Depression, and Time from Transplant are strong predictors of sleep quality
 
 ##### Linear regression model for ESS######
 
@@ -188,18 +190,41 @@ summary(imputed_sleep_data)
 #ask which dataset to use (imputed vs not)
 max_predictors_ESS <- as.integer(length(sleep_data$Epworth.Sleepiness.Scale)/15)
 
-#initial model with all predictors, we will research and figure out what to include/not to include
-ESS_model <-lm(Epworth.Sleepiness.Scale ~ Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis + Recurrence.of.disease + Rejection.graft.dysfunction+ Any.fibrosis + Renal.Failure + Depression + Corticoid,
+# These are the predictors to used
+ESS_model <-lm(Epworth.Sleepiness.Scale ~ Gender + Age + BMI + Depression + Time.from.transplant,
                data = imputed_sleep_data)
 
-stepAIC(ESS_model, direction = "both")
+#use step AIC to narrow down predictors that are validated by the litterature
+stepAIC(ESS_model, direciton = "backward")
 
 
+#create model based on that
+ESS_model <-lm(Epworth.Sleepiness.Scale ~ Gender + BMI + Depression,
+               data = imputed_sleep_data)
+
+
+
+#Check colinearity
+vif(ESS_model)
+
+#check for non-linearity/heterosedasticity
+ESS_fits <- fitted(ESS_model)
+ESS_resid <- resid(ESS_model)
+heteroscedasticity_ESS <- cbind(ESS_fits, ESS_resid)
+
+#plot
+ggplot(data = heteroscedasticity_ESS, mapping = aes(x = ESS_resid, ESS_fits))+
+  geom_point()
+
+#QQplot
+ggplot(data = heteroscedasticity_ESS, mapping = aes(sample = ESS_resid))+
+  geom_qq()+
+  geom_qq_line()+
+  labs(title = "QQ Plot for ESS model")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+#summarize the model
 summary(ESS_model)
-
-ESS_predictions <- fitted(ESS_model)
-
-#plot against each of the predictors, hold all other variables the same, show plots to show how the predictor influences the response
 
 ##### Logistic regression model for BSS ######
 
@@ -210,10 +235,24 @@ max_predictors_BSS <- as.integer(sleep_data %>%  count(Berlin.Sleepiness.Scale) 
 
 
 #initial model with all predictors, we will research and figure out what to include/not to include
-BSS_model <- glm(Berlin.Sleepiness.Scale ~ Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis + Recurrence.of.disease + Rejection.graft.dysfunction+ Any.fibrosis + Renal.Failure + Depression + Corticoid,
+BSS_model <- glm(Berlin.Sleepiness.Scale ~ Gender + Age + BMI + Time.from.transplant +  Depression,
                  family = "binomial",
                  data = imputed_sleep_data)
 
+
+stepAIC(BSS_model, direction = "backward")
+
+#use validated model
+BSS_model <- glm(Berlin.Sleepiness.Scale ~ Age + BMI + Time.from.transplant,
+                 family = "binomial",
+                 data = imputed_sleep_data)
+
+#summary
+summary(BSS_model)
+
+
+#Check colinearity
+vif(BSS_model)
 
 #Summary
 summary(BSS_model)
@@ -227,37 +266,105 @@ summary(BSS_model)
 max_predictors_AthensSS <- as.integer(length(sleep_data$Athens.Insomnia.Scale)/15)
 
 #initial model with all predictors, we will research and figure out what to include/not to include
-AthensSS_model <-lm(Athens.Insomnia.Scale ~ Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis + Recurrence.of.disease + Rejection.graft.dysfunction+ Any.fibrosis + Renal.Failure + Depression + Corticoid,
+AthensSS_model <-lm(Athens.Insomnia.Scale ~ Gender + Age + BMI + Time.from.transplant + Depression,
                data = imputed_sleep_data)
+
+
+stepAIC(AthensSS_model, direction = "backward")
+
+#use validated model
+AthensSS_model <- lm(Athens.Insomnia.Scale ~ Age + BMI + Time.from.transplant,
+                 data = imputed_sleep_data)
+
+
+#Check colinearity
+vif(ESS_model)
+
+#check for non-linearity/heterosedasticity
+AIS_fits <- fitted(AthensSS_model)
+AIS_resid <- resid(AthensSS_model)
+heteroscedasticity_AIS <- cbind(AIS_fits, AIS_resid)
+
+#plot
+ggplot(data = heteroscedasticity_AIS, mapping = aes(x = AIS_resid, AIS_fits))+
+  geom_point()+
+  labs(title = "Fitted vs Residual plot for the AIS model")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+#QQplot
+ggplot(data = heteroscedasticity_AIS, mapping = aes(sample = AIS_resid))+
+  geom_qq()+
+  geom_qq_line()+
+  labs(title = "QQ Plot for AIS model")+
+  theme(plot.title = element_text(hjust = 0.5))
 
 summary(AthensSS_model)
 
+
 #### Models for PCS and MCS ####
+
+####################
+#### PCS Model ####
 
 # use lm of AIS, BSS, ESS to predict PCS/MCS
 PCS_model <- lm(SF36.PCS ~ Epworth.Sleepiness.Scale + Berlin.Sleepiness.Scale + Athens.Insomnia.Scale,
                 data = imputed_sleep_data)
 
+#Check colinearity
+vif(PCS_model)
+
+#check for heterosedasticity
+PCS_fits <- fitted(PCS_model)
+PCS_resid <- resid(PCS_model)
+heteroscedasticity_PCS <- cbind(PCS_fits, PCS_resid)
+
+#plot
+ggplot(data = heteroscedasticity_PCS, mapping = aes(x = PCS_resid, PCS_fits))+
+  geom_point()+
+  labs(title = "Fitted vs Residual plot for the PCS model")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+#QQplot
+ggplot(data = heteroscedasticity_PCS, mapping = aes(sample = PCS_resid))+
+  geom_qq()+
+  geom_qq_line()+
+  labs(title = "QQ Plot for AIS model")+
+  theme(plot.title = element_text(hjust = 0.5))
+
 summary(PCS_model)
 
+############################
+#### MCS Model Creation ####
 
 MCS_model <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale + Berlin.Sleepiness.Scale + Athens.Insomnia.Scale,
                 data = imputed_sleep_data)
 
+#Check colinearity
+vif(MCS_model)
+
+#check for non-linearity/heterosedasticity
+MCS_fits <- fitted(MCS_model)
+MCS_resid <- resid(MCS_model)
+heteroscedasticity_MCS <- cbind(AIS_fits, AIS_resid)
+
+#plot
+ggplot(data = heteroscedasticity_AIS, mapping = aes(x = AIS_resid, AIS_fits))+
+  geom_point()+
+  labs(title = "Fitted vs Residual plot for the AIS model")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+#QQplot
+ggplot(data = heteroscedasticity_AIS, mapping = aes(sample = AIS_resid))+
+  geom_qq()+
+  geom_qq_line()+
+  labs(title = "QQ Plot for AIS model")+
+  theme(plot.title = element_text(hjust = 0.5))
+
 summary(MCS_model)
 
 
-#### Table summary of models ####
-
-
-
-
-### Analysis: plot fitted values, compared to original values, plot fitted compared to each predictor
-
-# Create new data: for each predictor, set all other predictors to the mean/reference
-
-### Analysis: plot fitted values, compared to original values, plot fitted compared to each predictor
-
+#### Analysis: plot predicted values compared to each predictor
 # Create new data: for each predictor, set all other predictors to the mean/reference
 
 #### Analysis for ESS_model ####
