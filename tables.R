@@ -8,16 +8,28 @@ summary_data <- sleep_data %>%
   select(-Subject) %>% 
   na.omit()
 
-#Rename the factors
+#Rename the factors so they show up nicer in the tables
 summary_data$Gender <-summary_data$Gender %>% 
   fct_recode(Male = "1", Female = "2")
-
 
 summary_data$Liver.Diagnosis <-summary_data$Liver.Diagnosis %>% 
   fct_recode(HepC = "1", HepB = "2", PSC.PBC.AHA = "3", Alcohol = "4", Other = "5")
 
+#convert binaries to yes and no
+#Select cols that need to be converted
+cols <- c("Recurrence.of.disease", "Rejection.graft.dysfunction", "Any.fibrosis", "Renal.Failure", "Depression", "Corticoid")
+
+#iterate through the columns and recode the factors
+for (col in cols){
+  summary_data[[col]] <- summary_data[[col]] %>% 
+    fct_recode(Yes = "1", No = "0")
+}
+
+summary_data$Berlin.Sleepiness.Scale <-summary_data$Berlin.Sleepiness.Scale %>% 
+  fct_recode(Sleep.Apnea = "1", Normal = "0")
+
 #create a summary table
-tbl_summary(summary_data,
+summary_table <- tbl_summary(summary_data,
             by = Gender,
             statistic = list(
               all_continuous() ~ "{median} ({sd})",
@@ -35,11 +47,11 @@ tbl_summary(summary_data,
               Athens.Insomnia.Scale = "Athens Insomnia Scale",
               Berlin.Sleepiness.Scale = "Berlin Sleepiness Scale",
               SF36.PCS = "SF36 Physical Component Survey",
-              SF36.MCS = "SF36 Mental Component Survey")
+              SF36.MCS = "SF36 Mental Component Survey"),
+            type = cols~"categorical",
             ) %>% 
   add_stat_label(location = "column")
-
-
+summary_table
 
 #### Model Summary Tables ####
 #ESS
