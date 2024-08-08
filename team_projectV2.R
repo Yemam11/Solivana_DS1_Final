@@ -14,6 +14,7 @@ library(glue)
 library(gtsummary)
 library(gt)
 library(car)
+library(patchwork)
 
 #load functions
 source("functions.R")
@@ -300,7 +301,6 @@ ggplot(data = heteroscedasticity_AIS, mapping = aes(sample = AIS_resid))+
 
 summary(AthensSS_model)
 
-
 #### Models for PCS and MCS ####
 
 ####################
@@ -368,23 +368,40 @@ summary(MCS_model)
 # Create new data: for each predictor, set all other predictors to the mean/reference
 
 #### Analysis for ESS_model ####
-Age_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "Age")
+Depression_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "Depression")
 Gender_data <-generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "Gender")
 BMI_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "BMI")
 
 
-ggplot(data = Age_data, mapping = aes(x = Age, y = fit)) +
-  geom_smooth(method = lm, se = TRUE)+
-  geom_smooth(mapping = aes(x = Age, y = Epworth.Sleepiness.Scale))
+#create a new dataframe with combined data (to plot with facets)
+combined_data <- rbind(
+  data.frame(Predictor = "Gender",
+             Variable = Gender_data$Gender %>%
+               fct_recode(Male = "1", Female = "2"),
+             fit = Gender_data$fit
+             ),
+  data.frame(Predictor = "Depression",
+             Variable = Depression_data$Depression %>% 
+               fct_recode(Yes = "1", No = "0"),
+             fit = Depression_data$fit
+             )
+)
 
-ggplot(data = Gender_data, mapping = aes(x = Gender, y = fit)) +
-  geom_boxplot(mapping = aes(x = Gender, y = Epworth.Sleepiness.Scale,)) +
-  geom_jitter(height = 0.1)
+# Plot both categorical variables and their impact on 
+cat_ess <- ggplot(data = combined_data, mapping = aes(x = Variable, y = fit, color = Predictor)) +
+  geom_jitter(height = 0.05) +
+  facet_wrap(~Predictor, scales = "free_x") +
+  labs(y = "Predicted ESS", x = "", title = "Impact of Categorical Predictors on ESS") +
+  theme(plot.title = element_text(hjust = 0.5, size = 10), legend.position = "bottom")+
+  geom_hline(yintercept = 9.13)+
+  geom_hline(yintercept = 7.81, linetype = 2)+
+  geom_hline(yintercept = 8.04, linetype = 4)
 
-  
-ggplot(data = Age_data, mapping = aes(x = Age, y = fit)) +
-  geom_line(col = "blue")+
-  geom_line(data = BMI_data, mapping = aes(x = BMI, y = fit), colour = "red" )+
-  scale_x_continuous(sec.axis = sec_axis( trans=~.*0.56, name="BMI"))+
-  geom_hline(yintercept = 10, linetype = 2)+
-  theme_classic()
+#plot Age
+cont_ess <- ggplot(data = BMI_data, mapping = aes(x = BMI, y = fit)) +
+  geom_smooth(method = lm, se = TRUE) +
+  labs(y = "Predicted ESS", title = "Impact of Continuous Predictors on ESS") +
+  theme(plot.title = element_text(hjust = 0.5, size = 10))
+
+#Place plots side by side
+cat_ess | cont_ess
