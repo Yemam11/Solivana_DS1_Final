@@ -3,43 +3,6 @@
 # Date: Aug. 12, 2024
 # to run: set wd to main repo page (Solivana_DS1_Final folder)
 
-#### Data generation function ####
-generate_data(response, predictor, data){
-  
-  #alter all other columns to be the mean
-  temp_data <- data %>% 
-    select(!c(predictor, response))
-  
-  data <- data %>% 
-    select(predictor, response)
-  
-  cols <- names(temp_data)
-  for(column in cols){
-    temp_data[[column]] <- mean(temp_data[[column]], na.rm = T)
-  }
-  
-  cbind()
-}
-
-#### EDA Function ####
-eda <- function(sleep_data){
-  #summarize mean age by gender
-  sleep_data.age <- sleep_data %>% 
-    group_by(Gender) %>%
-    summarise(mean_age = mean(Age, na.rm = T))
-  
-  ggplot(data = sleep_data.age, mapping = aes(x = Gender, y= mean_age))+
-    geom_col()
-  
-  #summarize BMI by gender
-  sleep_data.BMI <- sleep_data %>% 
-    group_by(Gender) %>%
-    summarise(mean_BMI = mean(BMI, na.rm = T))
-  
-  ggplot(data = sleep_data.BMI, mapping = aes(x = Gender, y= mean_BMI))+
-    geom_col()
-}
-
 #initialize libaries
 library(tidyverse)
 library(ggplot2)
@@ -47,6 +10,10 @@ library(corrplot)
 library(Hmisc)
 library(misty)
 library(mice)
+library(glue)
+
+#load functions
+source("functions.R")
 
 #import the data
 sleep_data <- read.csv("datasets/project_data.csv", header = T)
@@ -154,22 +121,21 @@ prevalence <- sleep_data %>% mutate(
 #determine the prevalence
 
 #create empty data frame
-rownames()
 prevalences <- data.frame()
-rownames(prevalences)
+rownames(prevalences) <- NULL
 
 #loop through the metrics, summarize them and append to empty df
 
-#FIX THIS SHIT
+
 for (name in names(prevalence)) {
   prevalence_temp <- prevalence %>%
     select(all_of(name)) %>% 
     na.omit()
   
   prevalence_temp <- prevalence_temp %>%
-    summarise(prev = sum(prevalence_temp[[all_of(name)]]),
+    summarise(insomnia = sum(prevalence_temp[[all_of(name)]]),
               total = n(),
-              percent = prev/total*100)
+              percent = insomnia/total*100)
   
   prevalences <- base::rbind(prevalences, prevalence_temp)
   
@@ -177,7 +143,7 @@ for (name in names(prevalence)) {
 
 #set the row names of the df
 row.names(prevalences) <- names(prevalence)
-
+prevalences
 
 #### Imputation ####
 # we need to do something to deal with the missing data
@@ -216,6 +182,8 @@ max_predictors_ESS <- as.integer(length(sleep_data$Epworth.Sleepiness.Scale)/15)
 #initial model with all predictors, we will research and figure out what to include/not to include
 ESS_model <-lm(Epworth.Sleepiness.Scale ~ Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis + Recurrence.of.disease + Rejection.graft.dysfunction+ Any.fibrosis + Renal.Failure + Depression + Corticoid,
                data = imputed_sleep_data)
+
+stepAIC(ESS_model, direction = "both")
 
 
 summary(ESS_model)
@@ -262,11 +230,11 @@ PCS_model <- lm(SF36.PCS ~ Epworth.Sleepiness.Scale + Berlin.Sleepiness.Scale + 
 
 summary(PCS_model)
 
+
 MCS_model <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale + Berlin.Sleepiness.Scale + Athens.Insomnia.Scale,
                 data = imputed_sleep_data)
 
 summary(PCS_model)
-
 
 #Create a dataset with relevant metrics for the analysis
 Q4_sleep_data <- imputed_sleep_data %>% 
@@ -276,3 +244,10 @@ Q4_sleep_data <- imputed_sleep_data %>%
 ### Analysis: plot fitted values, compared to original values, plot fitted compared to each predictor
 
 # Create new data: for each predictor, set all other predictors to the mean/reference
+
+#### Analysis for ESS_model ####
+Age_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "Age")
+
+ggplot(data = Age_data, mapping = aes(x = Age, y = fit))+
+  geom_smooth(method = lm, se = TRUE)
+
