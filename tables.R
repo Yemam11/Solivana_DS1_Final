@@ -63,9 +63,9 @@ summary_table
 #### Model Summary Tables ####
 #ESS
 ESS_table <- tbl_regression(ESS_model,
-                            label = list(Renal.Failure = "Renal Failure"),
                             intercept = T) %>%
   bold_p() %>%
+  add_vif() %>% 
   as_gt() %>% 
   tab_header(
     title = "Epworth Sleepiness Scale",
@@ -79,6 +79,7 @@ BSS_table <- tbl_regression(BSS_model,
                             label = list(Renal.Failure = "Renal Failure"),
                             intercept = T) %>% 
   bold_p() %>%
+  add_vif() %>% 
   as_gt() %>% 
   tab_header(
     title = "Berlin Sleepiness Scale",
@@ -91,6 +92,7 @@ AthensSS_table <- tbl_regression(AthensSS_model,
                             label = list(Renal.Failure = "Renal Failure"),
                             intercept = T) %>%
   bold_p() %>%
+  add_vif() %>% 
   as_gt() %>% 
   tab_header(
     title = "Athens Insomnia Scale",
@@ -106,6 +108,7 @@ PCS_table <- tbl_regression(PCS_model,
                                          Athens.Insomnia.Scale = "AIS"),
                             intercept = T) %>%
   bold_p() %>%
+  add_vif() %>% 
   as_gt() %>% 
   tab_header(
     title = "SF36 Physical Component Summary",
@@ -120,6 +123,7 @@ MCS_table <- tbl_regression(PCS_model,
                                          Athens.Insomnia.Scale = "AIS"),
                             intercept = T) %>%
   bold_p() %>%
+  add_vif() %>% 
   as_gt() %>% 
   tab_header(
     title = "SF36 Mental Component Summary",
