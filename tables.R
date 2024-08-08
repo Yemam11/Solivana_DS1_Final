@@ -50,9 +50,15 @@ summary_table <- tbl_summary(summary_data,
               SF36.MCS = "SF36 Mental Component Survey"),
             type = cols~"categorical",
             ) %>% 
-  add_stat_label(location = "column")
+  add_stat_label(location = "column") %>% 
+  as_gt() %>% 
+  tab_header(
+    title = "Data Summary",
+    subtitle = "Physical and Clinical Observations of Patients in Sleep Disturbance Study"
+  )
 summary_table
 
+gtsave(summary_table, filename = "summary_table.pdf")
 #### Model Summary Tables ####
 #ESS
 ESS_table <- tbl_regression(ESS_model,
