@@ -251,7 +251,22 @@ Q4_sleep_data <- imputed_sleep_data %>%
 
 #### Analysis for ESS_model ####
 Age_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "Age")
+Gender_data <-generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "Gender")
+BMI_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "BMI")
 
-ggplot(data = Age_data, mapping = aes(x = Age, y = fit))+
-  geom_smooth(method = lm, se = TRUE)
 
+ggplot(data = Age_data, mapping = aes(x = Age, y = fit)) +
+  geom_smooth(method = lm, se = TRUE)+
+  geom_smooth(mapping = aes(x = Age, y = Epworth.Sleepiness.Scale))
+
+ggplot(data = Gender_data, mapping = aes(x = Gender, y = fit)) +
+  geom_boxplot(mapping = aes(x = Gender, y = Epworth.Sleepiness.Scale,)) +
+  geom_jitter(height = 0.1)
+
+  
+ggplot(data = Age_data, mapping = aes(x = Age, y = fit)) +
+  geom_line(col = "blue")+
+  geom_line(data = BMI_data, mapping = aes(x = BMI, y = fit), colour = "red" )+
+  scale_x_continuous(sec.axis = sec_axis( trans=~.*0.56, name="BMI"))+
+  geom_hline(yintercept = 10, linetype = 2)+
+  theme_classic()
