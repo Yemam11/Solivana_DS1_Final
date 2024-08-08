@@ -11,6 +11,8 @@ library(Hmisc)
 library(misty)
 library(mice)
 library(glue)
+library(gtsummary)
+library(gt)
 
 #load functions
 source("functions.R")
@@ -42,6 +44,8 @@ sleep_data <- sleep_data %>%
          Berlin.Sleepiness.Scale,
          SF36.PCS,
          SF36.MCS)
+
+#### Table summaries #####
 
 #Quick glimplse of the data
 summary(sleep_data)
@@ -208,6 +212,7 @@ BSS_model <- glm(Berlin.Sleepiness.Scale ~ Gender + Age + BMI + Time.from.transp
 #Summary
 summary(BSS_model)
 
+
 ##### Linear regression model for AthensSS ######
 
 #calculate p; number of predictors
@@ -236,9 +241,9 @@ MCS_model <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale + Berlin.Sleepiness.Scale + 
 summary(MCS_model)
 
 
-#Create a dataset with relevant metrics for the analysis
-Q4_sleep_data <- imputed_sleep_data %>% 
-  select(SF36.MCS, SF36.MCS, Epworth.Sleepiness.Scale, Berlin.Sleepiness.Scale, Athens.Insomnia.Scale)
+#### Table summary of models ####
+
+
 
 
 ### Analysis: plot fitted values, compared to original values, plot fitted compared to each predictor
