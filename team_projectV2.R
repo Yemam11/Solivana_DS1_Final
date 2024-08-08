@@ -81,18 +81,24 @@ sleep_data <- sleep_data %>%
 #convert NAs to true and non-NAs to false
 NA_matrix <- is.na(sleep_data)
 
+#Create a correlation plot of missingness
+# see if missingness in one category is correlated with missingness in another category
+# Remove insignificant correlatons by calcualting p value for each correlation
+
 #calculate correlation matrix and p-value matrix
 cor_matrix <- Hmisc::rcorr(NA_matrix)
 
+#set diagonals (self correlations = 0)
 diag(cor_matrix$r) <- 0
 diag(cor_matrix$P) <- 0
 
+# Note alot of NA values in rows where SD = 0, i.e all values are complete
+#replace any NAs with 0 so they dont show up as question marks
 cor_matrix$r[NA] <- 0
 cor_matrix$P[NA] <- 0
 
 
 #plot a heatmap
-# Note alot of NA values in rows where SD = 0, i.e all values are complete
 corrplot(cor_matrix$r, method = "square", p.mat = cor_matrix$P, insig = "blank", type = "lower", sig.level = 0.05, na.label = " ", tl.cex = 0.5)
 
 # it seems that alot of people who did not fill out one sleep quality/QOL score, also tended not to fill out the rest
