@@ -58,11 +58,12 @@ summary_table <- tbl_summary(summary_data,
   )
 summary_table
 
-# gtsave(summary_table, filename = "summary_table.pdf")
+gtsave(summary_table, filename = "summary_table.png", vwidth = 750, vheight = 2500, expand = 10)
 
 #### Model Summary Tables ####
 #ESS
 ESS_table <- tbl_regression(ESS_model,
+                            label = list(Time.from.transplant = "Time from Transplant (Years)"),
                             intercept = T) %>%
   bold_p() %>%
   add_vif() %>% 
@@ -76,7 +77,7 @@ ESS_table
 
 #BSS
 BSS_table <- tbl_regression(BSS_model,
-                            label = list(Renal.Failure = "Renal Failure"),
+                            label = list(Time.from.transplant = "Time from Transplant (Years)"),
                             intercept = T) %>% 
   bold_p() %>%
   add_vif() %>% 
@@ -89,7 +90,7 @@ BSS_table
 
 #AthensSS
 AthensSS_table <- tbl_regression(AthensSS_model,
-                            label = list(Renal.Failure = "Renal Failure"),
+                            label = list(Time.from.transplant = "Time from Transplant (Years)"),
                             intercept = T) %>%
   bold_p() %>%
   add_vif() %>% 
