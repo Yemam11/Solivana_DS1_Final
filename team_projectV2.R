@@ -71,9 +71,10 @@ sleep_data$Epworth.Sleepiness.Scale[sleep_data$Epworth.Sleepiness.Scale > 24]<- 
 tab <- apply(ifelse(is.na(sleep_data), "Missing", "Not Missing"), 2, table)
 
 #proportion tables for missingness (True = not missing, false = missing)
-lapply(tab, prop.table)
+Missingness <- lapply(tab, prop.table)
+Missingness_df <- sapply(Missingness, cbind)
 
-# PSS has 30% missingness, may make sense to exclude from the analysis
+# PSQI has 30% missingness, may make sense to exclude from the analysis
 sleep_data <- sleep_data %>% 
   select(!Pittsburgh.Sleep.Quality.Index.Score)
 
@@ -88,7 +89,7 @@ NA_matrix <- is.na(sleep_data)
 # Remove insignificant correlatons by calcualting p value for each correlation
 
 #calculate correlation matrix and p-value matrix
-cor_matrix <- Hmisc::rcorr(NA_matrix)
+cor_matrix <- Hmisc::rcorr(NA_matrix, type = "spearman" )
 
 #set diagonals (self correlations = 0)
 diag(cor_matrix$r) <- 0
@@ -173,7 +174,7 @@ imputed_sleep_data <- mice(sleep_data,
 #check one of the imputed datasets to ensure there are no missing values
 imputed_sleep_data <- complete(imputed_sleep_data, action = 1)
 
-#NO NAs, negative values to be discussed in the discussion section
+#NO NAs
 summary(imputed_sleep_data)
 
 #===============Creating Models===================#
