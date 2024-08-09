@@ -22,8 +22,6 @@ source("functions.R")
 #import the data
 sleep_data <- read.csv("datasets/project_data.csv", header = T)
 
-names(sleep_data)
-
 #### Data Cleaning ####
 
 #select relevant columns
@@ -47,9 +45,7 @@ sleep_data <- sleep_data %>%
          SF36.PCS,
          SF36.MCS)
 
-#### Table summaries #####
-
-#Quick glimplse of the data
+#Quick glimpse of the data
 summary(sleep_data)
 
 #convert categorical data to factors
@@ -77,6 +73,42 @@ Missingness_df <- sapply(Missingness, cbind)
 # PSQI has 30% missingness, may make sense to exclude from the analysis
 sleep_data <- sleep_data %>% 
   select(!Pittsburgh.Sleep.Quality.Index.Score)
+
+#### Summary Dataframe Modifications ####
+# Creating modified version of the data frame to create EDA summaries
+
+#remove the subject field
+summary_data <- sleep_data %>%
+  select(-Subject)
+
+#Rename the factors so they show up nicer in the tables
+summary_data$Gender <-summary_data$Gender %>% 
+  fct_recode(Male = "1", Female = "2")
+
+summary_data$Liver.Diagnosis <-summary_data$Liver.Diagnosis %>% 
+  fct_recode(HepC = "1", HepB = "2", PSC.PBC.AHA = "3", Alcohol = "4", Other = "5")
+
+#convert binaries to yes and no
+#Select cols that need to be converted
+cols <- c("Recurrence.of.disease", "Rejection.graft.dysfunction", "Any.fibrosis", "Renal.Failure", "Depression", "Corticoid")
+
+#iterate through the columns and recode the factors
+for (col in cols){
+  summary_data[[col]] <- summary_data[[col]] %>% 
+    fct_recode(Yes = "1", No = "0")
+}
+
+summary_data$Berlin.Sleepiness.Scale <-summary_data$Berlin.Sleepiness.Scale %>% 
+  fct_recode(Sleep.Apnea = "1", Normal = "0")
+
+
+#Description of relevant data
+EDAs<- eda(sleep_data)
+for (plots in EDAs) {
+  print(plots)
+}
+
+#### Missingness Analysis ####
 
 #See if we can identify a correlation between missing data
 # i.e if some data is missing are we likely to be missing other data?
@@ -110,11 +142,6 @@ corrplot(cor_matrix$r, method = "square", p.mat = cor_matrix$P, insig = "blank",
 md.pattern(sleep_data, rotate.names = T)
 fluxplot(sleep_data, labels = F)
 
-#Description of relevant data
-EDAs<- eda(sleep_data)
-for (plots in EDAs) {
-  print(plots)
-}
 
 #### Prevalence of sleep disturbance ####
 # to estimate the prevalence, identify cutoffs in the data
@@ -141,17 +168,20 @@ prevalences <- data.frame()
 rownames(prevalences) <- NULL
 
 #loop through the metrics, summarize them and append to empty df
-
 for (name in names(prevalence)) {
+  
+  #remove the NAs so they dont skew the count
   prevalence_temp <- prevalence %>%
     select(all_of(name)) %>% 
     na.omit()
   
+  #summarize and calculate how many patients have sleep issues and how many dont
   prevalence_temp <- prevalence_temp %>%
     summarise(insomnia = sum(prevalence_temp[[all_of(name)]]),
               total = n(),
               percent = insomnia/total*100)
   
+  #Add the data to a df
   prevalences <- base::rbind(prevalences, prevalence_temp)
   
 }
@@ -282,7 +312,6 @@ ggplot(data = heteroscedasticity_AIS, mapping = aes(sample = AIS_resid))+
 
 summary(AthensSS_model)
 
-#### Models for PCS and MCS ####
 
 ####################
 #### PCS Model ####
@@ -315,8 +344,7 @@ ggplot(data = heteroscedasticity_PCS, mapping = aes(sample = PCS_resid))+
 
 summary(PCS_model)
 
-############################
-#### MCS Model Creation ####
+#### MCS Model ####
 
 MCS_model <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale + Berlin.Sleepiness.Scale + Athens.Insomnia.Scale,
                 data = imputed_sleep_data)
@@ -352,6 +380,9 @@ summary(MCS_model)
 Depression_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "Depression")
 Gender_data <-generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "Gender")
 BMI_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "BMI")
+Age_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "Age")
+Transplant_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "Time.from.transplant")
+
 
 
 #create a new dataframe with combined data (to plot with facets)
@@ -368,21 +399,40 @@ combined_data <- rbind(
              )
 )
 
-# Plot both categorical variables and their impact on 
+combined_data_cont <- rbind(
+  data.frame(Predictor = "Age",
+             Variable = Age_data$Age,
+             fit = Age_data$fit
+  ),
+  data.frame(Predictor = "BMI",
+             Variable = BMI_data$BMI,
+             fit = BMI_data$fit
+  ),
+  data.frame(Predictor = "Time.from.transplant",
+             Variable = BMI_data$BMI,
+             fit = Transplant_data$fit
+  )
+  
+)
+
+# Plot both categorical variables and their impact on predicted values
 cat_ess <- ggplot(data = combined_data, mapping = aes(x = Variable, y = fit, color = Predictor)) +
   geom_jitter(height = 0.05) +
   facet_wrap(~Predictor, scales = "free_x") +
   labs(y = "Predicted ESS", x = "", title = "Impact of Categorical Predictors on ESS") +
-  theme(plot.title = element_text(hjust = 0.5, size = 10), legend.position = "bottom")+
+  theme(plot.title = element_text(hjust = 0.5, size = 10))+
   geom_hline(yintercept = 9.13)+
   geom_hline(yintercept = 7.81, linetype = 2)+
-  geom_hline(yintercept = 8.04, linetype = 4)
+  geom_hline(yintercept = 8.04, linetype = 4)+
+  guides(y="none")
 
-#plot Age
-cont_ess <- ggplot(data = BMI_data, mapping = aes(x = BMI, y = fit)) +
-  geom_smooth(method = lm, se = TRUE) +
-  labs(y = "Predicted ESS", title = "Impact of Continuous Predictors on ESS") +
-  theme(plot.title = element_text(hjust = 0.5, size = 10))
+#plot continuous variables and their impact on pred. values
+cont_ess <- ggplot(data = combined_data_cont, mapping = aes(x = Variable, y = fit, color = Predictor)) +
+  geom_smooth(method = lm) +
+  facet_wrap(~Predictor, scales = "free_x")+
+  labs(y = "Predicted ESS", title = "Impact of Continuous Predictors on ESS", x = "") +
+  theme(plot.title = element_text(hjust = 0.5, size = 10))+
+  guides(y="none")
 
 #Place plots side by side
-cat_ess | cont_ess
+# cat_ess | cont_ess

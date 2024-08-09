@@ -1,6 +1,6 @@
 # Defines functions for team_project
 # Authors: Youssef Emam, Hasan Abdo, Angela Bakaj
-
+# Run the main file to ensure you have all the necessary data to generate the plots
 
 #### Data generation function ####
 generate_data <- function(model = "", response = "", predictor ="", data = imputed_sleep_data){

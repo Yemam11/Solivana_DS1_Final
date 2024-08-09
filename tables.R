@@ -1,31 +1,6 @@
 #### General Summary Tables ####
-
 #Run the main file to ensure you have all the data to create the tables
 source("team_projectV2.R")
-
-#remove the subject field
-summary_data <- sleep_data %>%
-  select(-Subject)
-
-#Rename the factors so they show up nicer in the tables
-summary_data$Gender <-summary_data$Gender %>% 
-  fct_recode(Male = "1", Female = "2")
-
-summary_data$Liver.Diagnosis <-summary_data$Liver.Diagnosis %>% 
-  fct_recode(HepC = "1", HepB = "2", PSC.PBC.AHA = "3", Alcohol = "4", Other = "5")
-
-#convert binaries to yes and no
-#Select cols that need to be converted
-cols <- c("Recurrence.of.disease", "Rejection.graft.dysfunction", "Any.fibrosis", "Renal.Failure", "Depression", "Corticoid")
-
-#iterate through the columns and recode the factors
-for (col in cols){
-  summary_data[[col]] <- summary_data[[col]] %>% 
-    fct_recode(Yes = "1", No = "0")
-}
-
-summary_data$Berlin.Sleepiness.Scale <-summary_data$Berlin.Sleepiness.Scale %>% 
-  fct_recode(Sleep.Apnea = "1", Normal = "0")
 
 #create a summary table
 summary_table <- tbl_summary(summary_data,
