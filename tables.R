@@ -5,8 +5,7 @@ source("team_projectV2.R")
 
 #remove the subject field
 summary_data <- sleep_data %>%
-  select(-Subject) %>% 
-  na.omit()
+  select(-Subject)
 
 #Rename the factors so they show up nicer in the tables
 summary_data$Gender <-summary_data$Gender %>% 
@@ -49,14 +48,14 @@ summary_table <- tbl_summary(summary_data,
               SF36.PCS = "SF36 Physical Component Survey",
               SF36.MCS = "SF36 Mental Component Survey"),
             type = cols~"categorical",
-            ) %>% 
-  add_stat_label(location = "column") %>% 
+            missing = "no") %>% 
+  add_stat_label(location = "column") %>%
+  add_n(missing = TRUE, last = FALSE, statistic = "{N_miss} ({p_miss})%", col_label = "**Missing**") %>%
   as_gt() %>% 
   tab_header(
     title = "Data Summary",
     subtitle = "Physical and Clinical Observations of Patients in Sleep Disturbance Study"
   )
-
 summary_table
 
 # gtsave(summary_table, filename = "summary_table.pdf")
