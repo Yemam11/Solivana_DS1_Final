@@ -111,7 +111,10 @@ md.pattern(sleep_data, rotate.names = T)
 fluxplot(sleep_data, labels = F)
 
 #Description of relevant data
-eda(sleep_data)
+EDAs<- eda(sleep_data)
+for (plots in EDAs) {
+  print(plots)
+}
 
 #### Prevalence of sleep disturbance ####
 # to estimate the prevalence, identify cutoffs in the data
@@ -196,20 +199,12 @@ max_predictors_ESS <- as.integer(length(sleep_data$Epworth.Sleepiness.Scale)/15)
 ESS_model <-lm(Epworth.Sleepiness.Scale ~ Gender + Age + BMI + Depression + Time.from.transplant,
                data = imputed_sleep_data)
 
-#use step AIC to narrow down predictors that are validated by the litterature
-stepAIC(ESS_model, direciton = "backward")
-
-
-#create model based on that
-ESS_model <-lm(Epworth.Sleepiness.Scale ~ Gender + BMI + Depression,
-               data = imputed_sleep_data)
-
 
 
 #Check colinearity
 vif(ESS_model)
 
-#check for non-linearity/heterosedasticity
+#check for heterosedasticity
 ESS_fits <- fitted(ESS_model)
 ESS_resid <- resid(ESS_model)
 heteroscedasticity_ESS <- cbind(ESS_fits, ESS_resid)
@@ -241,14 +236,6 @@ BSS_model <- glm(Berlin.Sleepiness.Scale ~ Gender + Age + BMI + Time.from.transp
                  family = "binomial",
                  data = imputed_sleep_data)
 
-
-stepAIC(BSS_model, direction = "backward")
-
-#use validated model
-BSS_model <- glm(Berlin.Sleepiness.Scale ~ Age + BMI + Time.from.transplant,
-                 family = "binomial",
-                 data = imputed_sleep_data)
-
 #summary
 summary(BSS_model)
 
@@ -270,13 +257,6 @@ max_predictors_AthensSS <- as.integer(length(sleep_data$Athens.Insomnia.Scale)/1
 #initial model with all predictors, we will research and figure out what to include/not to include
 AthensSS_model <-lm(Athens.Insomnia.Scale ~ Gender + Age + BMI + Time.from.transplant + Depression,
                data = imputed_sleep_data)
-
-
-stepAIC(AthensSS_model, direction = "backward")
-
-#use validated model
-AthensSS_model <- lm(Athens.Insomnia.Scale ~ Age + BMI + Time.from.transplant,
-                 data = imputed_sleep_data)
 
 
 #Check colinearity
