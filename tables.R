@@ -37,7 +37,7 @@ summary_table <- tbl_summary(summary_data,
               ),
             
             label = list(
-              Time.from.transplant  = "Time from transplant",
+              Time.from.transplant  = "Time from transplant (Years)",
               Liver.Diagnosis = "Liver Diagnosis",
               Recurrence.of.disease = "Recurrence of disease",
               Renal.Failure = "Renal Failure",
@@ -56,6 +56,7 @@ summary_table <- tbl_summary(summary_data,
     title = "Data Summary",
     subtitle = "Physical and Clinical Observations of Patients in Sleep Disturbance Study"
   )
+
 summary_table
 
 # gtsave(summary_table, filename = "summary_table.pdf")
