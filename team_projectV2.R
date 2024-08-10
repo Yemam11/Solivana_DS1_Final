@@ -448,6 +448,7 @@ Transplant_data <- generate_data(model = ESS_model, response = "Epworth.Sleepine
 
 
 #create a new dataframe with combined data (to plot with facets)
+#categorical
 combined_data <- rbind(
   data.frame(Predictor = "Gender",
              Variable = Gender_data$Gender %>%
@@ -461,6 +462,7 @@ combined_data <- rbind(
              )
 )
 
+#Same for continuous data
 combined_data_cont <- rbind(
   data.frame(Predictor = "Age",
              Variable = Age_data$Age,
@@ -477,7 +479,7 @@ combined_data_cont <- rbind(
   
 )
 
-# Plot both categorical variables and their impact on predicted values
+# Plot categorical variables and their impact on predicted values
 cat_ess <- ggplot(data = combined_data, mapping = aes(x = Variable, y = fit, color = Predictor)) +
   geom_jitter(height = 0.05) +
   facet_wrap(~Predictor, scales = "free_x") +
@@ -540,20 +542,18 @@ combined_data_cont <- rbind(
 cat_bss <- ggplot(data = combined_data, mapping = aes(x = Variable, y = fit, color = Predictor)) +
   geom_jitter(height = 0.0001) +
   facet_wrap(~Predictor, scales = "free_x") +
-  labs(y = "Predicted Probability of Sleep Disturbance", x = "", title = "Impact of Categorical Predictors on BSS") +
+  labs(y = "Probability of Sleep Disturbance", x = "", title = "Impact of Categorical Predictors on BSS") +
   theme(plot.title = element_text(hjust = 0.5, size = 10))+
   geom_hline(yintercept = 0.3683575, linetype = 1)+
   geom_hline(yintercept = 0.3916458, linetype = 1)+
-  geom_hline(yintercept = 0.3736843, linetype = 2)+
-  guides()
+  geom_hline(yintercept = 0.3736843, linetype = 2)
 
 #plot continuous variables and their impact on pred. values
 cont_bss <- ggplot(data = combined_data_cont, mapping = aes(x = Variable, y = fit, color = Predictor)) +
   geom_smooth(method = lm, se = F) +
   facet_wrap(~Predictor)+
   labs(y = "Predicted Probability of Sleep Disturbance", title = "Impact of Continuous Predictors on BSS", x = "") +
-  theme(plot.title = element_text(hjust = 0.5, size = 10))+
-  guides()
+  theme(plot.title = element_text(hjust = 0.5, size = 10))
 
 #### Analysis for AIS model ####
 Depression_data <- generate_data(model = AthensSS_model, response = "Athens.Insomnia.Scale", predictor = "Depression")
@@ -691,3 +691,19 @@ cont_MCS <- ggplot(data = combined_data_cont, mapping = aes(x = Variable, y = fi
   labs(y = "Predicted MCS", title = "Impact of Continuous Predictors on MCS", x = "") +
   theme(plot.title = element_text(hjust = 0.5, size = 10))+
   guides()
+
+#plot all the graphs
+cat_ess
+cont_ess
+
+cat_bss
+cont_bss
+
+cat_AIS
+cont_AIS
+
+cat_PCS
+cont_PCS
+
+cat_MCS
+cont_MCS

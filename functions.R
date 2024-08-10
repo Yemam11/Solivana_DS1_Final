@@ -38,9 +38,10 @@ generate_data <- function(model = "", response = "", predictor ="", data = imput
   #use the model to predict fitted values
   
   if(class(new_data[[response]]) == "factor"){
+    #if it's glm predict the probability
     predicted_values <- predict(model, newdata = new_data, type = "response")
-    predicted_values <- ifelse(predicted_values >= 0.5, 1, 0)
   } else{
+    #if its a lm predict the actual values
     predicted_values <- predict(model, newdata = new_data)
   }
   
