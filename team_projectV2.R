@@ -230,6 +230,21 @@ ESS_model <-lm(Epworth.Sleepiness.Scale ~ Gender + Age + BMI + Depression + Time
                data = imputed_sleep_data)
 
 
+ESS_model2 <- lm(Epworth.Sleepiness.Scale ~ Gender + Age + BMI + Depression + Time.from.transplant + Liver.Diagnosis,
+                 data = imputed_sleep_data)
+
+
+anova(ESS_model,ESS_model2)
+AIC(ESS_model)
+AIC(ESS_model2)
+
+
+ESS_model3 <- lm(Epworth.Sleepiness.Scale ~ Gender + Age + BMI + Depression + Time.from.transplant + Renal.Failure, 
+                 data = imputed_sleep_data)
+
+anova(ESS_model,ESS_model3)
+AIC(ESS_model)
+AIC(ESS_model3)
 
 #Check colinearity
 vif(ESS_model)
@@ -260,11 +275,21 @@ summary(ESS_model)
 #calculate:
 max_predictors_BSS <- as.integer(sleep_data %>%  count(Berlin.Sleepiness.Scale) %>% filter(Berlin.Sleepiness.Scale == 1) %>% pull(n)/15)
 
-
+length(sleep_data$Berlin.Sleepiness.Scale[sleep_data$Berlin.Sleepiness.Scale == 1])
+length(sleep_data$Berlin.Sleepiness.Scale)
 #initial model with all predictors, we will research and figure out what to include/not to include
 BSS_model <- glm(Berlin.Sleepiness.Scale ~ Gender + Age + BMI + Time.from.transplant +  Depression,
                  family = "binomial",
                  data = imputed_sleep_data)
+
+#could not add liver diagnosis, it would exceed maximum amount of degrees of freedom allowed for this model 
+BSS_model2 <- glm(Berlin.Sleepiness.Scale ~ Gender + Age + BMI + Time.from.transplant +  Depression + Renal.Failure,
+                  family = "binomial",
+                  data = imputed_sleep_data)
+
+anova(BSS_model,BSS_model2)
+
+
 
 #summary
 summary(BSS_model)
@@ -288,6 +313,21 @@ max_predictors_AthensSS <- as.integer(length(sleep_data$Athens.Insomnia.Scale)/1
 AthensSS_model <-lm(Athens.Insomnia.Scale ~ Gender + Age + BMI + Time.from.transplant + Depression,
                data = imputed_sleep_data)
 
+AthensSS_model2 <-lm(Athens.Insomnia.Scale ~ Gender + Age + BMI + Time.from.transplant + Depression + Liver.Diagnosis,
+                    data = imputed_sleep_data)
+
+anova(AthensSS_model,AthensSS_model2)
+
+AIC(AthensSS_model)
+AIC(AthensSS_model2)
+
+
+AthensSS_model3 <- lm(Athens.Insomnia.Scale ~ Gender + Age + BMI + Time.from.transplant + Depression + Renal.Failure,
+                      data = imputed_sleep_data)
+
+anova(AthensSS_model,AthensSS_model3)
+AIC(AthensSS_model)
+AIC(AthensSS_model3)
 
 #Check colinearity
 vif(ESS_model)
