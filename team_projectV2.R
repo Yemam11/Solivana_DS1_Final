@@ -219,6 +219,11 @@ imputed_sleep_data <- complete(imputed_sleep_data, action = 1)
 #NO NAs
 summary(imputed_sleep_data)
 
+#remove negatives
+imputed_sleep_data$Epworth.Sleepiness.Scale[imputed_sleep_data$Epworth.Sleepiness.Scale < 0] <- 0
+
+summary(imputed_sleep_data)
+
 #===============Creating Models===================#
 
 #Create models that predict sleep disturbance based on predictor variables
@@ -469,7 +474,7 @@ combined_data_cont <- rbind(
              fit = Age_data$predicted_values
   ),
   data.frame(Predictor = "BMI",
-             Variable = BMI_data$BMI,
+            Variable = BMI_data$BMI,
              fit = BMI_data$predicted_values
   ),
   data.frame(Predictor = "Time.from.transplant",
@@ -485,8 +490,9 @@ cat_ess <- ggplot(data = combined_data, mapping = aes(x = Variable, y = fit, col
   facet_wrap(~Predictor, scales = "free_x") +
   labs(y = "Predicted ESS", x = "", title = "Impact of Categorical Predictors on ESS") +
   theme(plot.title = element_text(hjust = 0.5, size = 10))+
-  geom_hline(yintercept = 9.13)+
-  guides()
+  geom_hline(yintercept = 9.145496)+
+  geom_hline(yintercept = 8.053150, , linetype = 2)+
+  geom_hline(yintercept = 7.801526, linetype = 1)
 
 #plot continuous variables and their impact on pred. values
 cont_ess <- ggplot(data = combined_data_cont, mapping = aes(x = Variable, y = fit, color = Predictor)) +
@@ -606,8 +612,8 @@ cat_AIS <- ggplot(data = combined_data, mapping = aes(x = Variable, y = fit, col
 
 #plot continuous variables and their impact on pred. values
 cont_AIS <- ggplot(data = combined_data_cont, mapping = aes(x = Variable, y = fit, color = Predictor)) +
-  geom_line()+
-  facet_wrap(~Predictor, scales = "free_x")+
+  geom_smooth(method = lm, se = F)+
+  facet_wrap(~Predictor)+
   labs(y = "Predicted AIS", title = "Impact of Continuous Predictors on AIS", x = "") +
   theme(plot.title = element_text(hjust = 0.5, size = 10))+
   guides()
@@ -642,11 +648,13 @@ cat_PCS <- ggplot(data = combined_data, mapping = aes(x = Variable, y = fit, col
   geom_jitter(height = 0.05) +
   facet_wrap(~Predictor, scales = "free_x") +
   labs(y = "Predicted PCS", x = "", title = "Impact of Categorical Predictors on PCS") +
-  theme(plot.title = element_text(hjust = 0.5, size = 10))
+  theme(plot.title = element_text(hjust = 0.5, size = 10))+
+  geom_hline(yintercept = 44.27301)+
+  geom_hline(yintercept = 41.5997)
 
 #plot continuous variables and their impact on pred. values
 cont_PCS <- ggplot(data = combined_data_cont, mapping = aes(x = Variable, y = fit, color = Predictor)) +
-  geom_line()+
+  geom_smooth(method = lm, se = F)+
   facet_wrap(~Predictor)+
   labs(y = "Predicted PCS", title = "Impact of Continuous Predictors on PCS", x = "") +
   theme(plot.title = element_text(hjust = 0.5, size = 10))+
@@ -682,11 +690,13 @@ cat_MCS <- ggplot(data = combined_data, mapping = aes(x = Variable, y = fit, col
   geom_jitter(height = 0.001) +
   facet_wrap(~Predictor, scales = "free_x") +
   labs(y = "Predicted MCS", x = "", title = "Impact of Categorical Predictors on MCS") +
-  theme(plot.title = element_text(hjust = 0.5, size = 10))
+  theme(plot.title = element_text(hjust = 0.5, size = 10))+
+  geom_hline(yintercept = 46.19053)+
+  geom_hline(yintercept = 46.22998)
 
 #plot continuous variables and their impact on pred. values
 cont_MCS <- ggplot(data = combined_data_cont, mapping = aes(x = Variable, y = fit, color = Predictor)) +
-  geom_line()+
+  geom_smooth(method = lm, se = F)+
   facet_wrap(~Predictor)+
   labs(y = "Predicted MCS", title = "Impact of Continuous Predictors on MCS", x = "") +
   theme(plot.title = element_text(hjust = 0.5, size = 10))+
