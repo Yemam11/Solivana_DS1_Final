@@ -439,6 +439,7 @@ summary(MCS_model)
 # Create new data: for each predictor, set all other predictors to the mean/reference
 
 #### Analysis for ESS_model ####
+
 Depression_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "Depression")
 Gender_data <-generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "Gender")
 BMI_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "BMI")
@@ -446,33 +447,32 @@ Age_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scal
 Transplant_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "Time.from.transplant")
 
 
-
 #create a new dataframe with combined data (to plot with facets)
 combined_data <- rbind(
   data.frame(Predictor = "Gender",
              Variable = Gender_data$Gender %>%
                fct_recode(Male = "1", Female = "2"),
-             fit = Gender_data$fit
+             fit = Gender_data$predicted_values
              ),
   data.frame(Predictor = "Depression",
              Variable = Depression_data$Depression %>% 
                fct_recode(Yes = "1", No = "0"),
-             fit = Depression_data$fit
+             fit = Depression_data$predicted_values
              )
 )
 
 combined_data_cont <- rbind(
   data.frame(Predictor = "Age",
              Variable = Age_data$Age,
-             fit = Age_data$fit
+             fit = Age_data$predicted_values
   ),
   data.frame(Predictor = "BMI",
              Variable = BMI_data$BMI,
-             fit = BMI_data$fit
+             fit = BMI_data$predicted_values
   ),
   data.frame(Predictor = "Time.from.transplant",
              Variable = BMI_data$BMI,
-             fit = Transplant_data$fit
+             fit = Transplant_data$predicted_values
   )
   
 )
@@ -484,17 +484,210 @@ cat_ess <- ggplot(data = combined_data, mapping = aes(x = Variable, y = fit, col
   labs(y = "Predicted ESS", x = "", title = "Impact of Categorical Predictors on ESS") +
   theme(plot.title = element_text(hjust = 0.5, size = 10))+
   geom_hline(yintercept = 9.13)+
-  geom_hline(yintercept = 7.81, linetype = 2)+
-  geom_hline(yintercept = 8.04, linetype = 4)+
-  guides(y="none")
+  guides()
 
 #plot continuous variables and their impact on pred. values
 cont_ess <- ggplot(data = combined_data_cont, mapping = aes(x = Variable, y = fit, color = Predictor)) +
-  geom_smooth(method = lm) +
-  facet_wrap(~Predictor, scales = "free_x")+
+  geom_smooth(method = lm, se = F) +
+  facet_wrap(~Predictor)+
   labs(y = "Predicted ESS", title = "Impact of Continuous Predictors on ESS", x = "") +
   theme(plot.title = element_text(hjust = 0.5, size = 10))+
-  guides(y="none")
+  guides()
 
 #Place plots side by side
 # cat_ess | cont_ess
+
+#### Analysis for BSS_model ####
+Depression_data <- generate_data(model = BSS_model, response = "Berlin.Sleepiness.Scale", predictor = "Depression")
+Gender_data <-generate_data(model = BSS_model, response = "Berlin.Sleepiness.Scale", predictor = "Gender")
+BMI_data <- generate_data(model = BSS_model, response = "Berlin.Sleepiness.Scale", predictor = "BMI")
+Age_data <- generate_data(model = BSS_model, response = "Berlin.Sleepiness.Scale", predictor = "Age")
+Transplant_data <- generate_data(model = BSS_model, response = "Berlin.Sleepiness.Scale", predictor = "Time.from.transplant")
+
+
+
+#create a new dataframe with combined data (to plot with facets)
+combined_data <- rbind(
+  data.frame(Predictor = "Gender",
+             Variable = Gender_data$Gender %>%
+               fct_recode(Male = "1", Female = "2"),
+             fit = Gender_data$predicted_values
+  ),
+  data.frame(Predictor = "Depression",
+             Variable = Depression_data$Depression %>% 
+               fct_recode(Yes = "1", No = "0"),
+             fit = Depression_data$predicted_values
+  )
+)
+
+combined_data_cont <- rbind(
+  data.frame(Predictor = "Age",
+             Variable = Age_data$Age,
+             fit = Age_data$predicted_values
+  ),
+  data.frame(Predictor = "BMI",
+             Variable = BMI_data$BMI,
+             fit = BMI_data$predicted_values
+  ),
+  data.frame(Predictor = "Time.from.transplant",
+             Variable = BMI_data$BMI,
+             fit = Transplant_data$predicted_values
+  )
+  
+)
+
+# Plot both categorical variables and their impact on predicted values
+cat_bss <- ggplot(data = combined_data, mapping = aes(x = Variable, y = fit, color = Predictor)) +
+  geom_jitter(height = 0.0001) +
+  facet_wrap(~Predictor, scales = "free_x") +
+  labs(y = "Predicted Probability of Sleep Disturbance", x = "", title = "Impact of Categorical Predictors on BSS") +
+  theme(plot.title = element_text(hjust = 0.5, size = 10))+
+  geom_hline(yintercept = 0.3683575, linetype = 1)+
+  geom_hline(yintercept = 0.3916458, linetype = 1)+
+  geom_hline(yintercept = 0.3736843, linetype = 2)+
+  guides()
+
+#plot continuous variables and their impact on pred. values
+cont_bss <- ggplot(data = combined_data_cont, mapping = aes(x = Variable, y = fit, color = Predictor)) +
+  geom_smooth(method = lm, se = F) +
+  facet_wrap(~Predictor)+
+  labs(y = "Predicted Probability of Sleep Disturbance", title = "Impact of Continuous Predictors on BSS", x = "") +
+  theme(plot.title = element_text(hjust = 0.5, size = 10))+
+  guides()
+
+#### Analysis for AIS model ####
+Depression_data <- generate_data(model = AthensSS_model, response = "Athens.Insomnia.Scale", predictor = "Depression")
+Gender_data <-generate_data(model = AthensSS_model, response = "Athens.Insomnia.Scale", predictor = "Gender")
+BMI_data <- generate_data(model = AthensSS_model, response = "Athens.Insomnia.Scale", predictor = "BMI")
+Age_data <- generate_data(model = AthensSS_model, response = "Athens.Insomnia.Scale", predictor = "Age")
+Transplant_data <- generate_data(model = ESS_model, response = "Athens.Insomnia.Scale", predictor = "Time.from.transplant")
+
+
+#create a new dataframe with combined data (to plot with facets)
+combined_data <- rbind(
+  data.frame(Predictor = "Gender",
+             Variable = Gender_data$Gender %>%
+               fct_recode(Male = "1", Female = "2"),
+             fit = Gender_data$predicted_values
+  ),
+  data.frame(Predictor = "Depression",
+             Variable = Depression_data$Depression %>% 
+               fct_recode(Yes = "1", No = "0"),
+             fit = Depression_data$predicted_values
+  )
+)
+
+combined_data_cont <- rbind(
+  data.frame(Predictor = "Age",
+             Variable = Age_data$Age,
+             fit = Age_data$predicted_values
+  ),
+  data.frame(Predictor = "BMI",
+             Variable = BMI_data$BMI,
+             fit = BMI_data$predicted_values
+  ),
+  data.frame(Predictor = "Time.from.transplant",
+             Variable = BMI_data$BMI,
+             fit = Transplant_data$predicted_values
+  )
+  
+)
+
+# Plot both categorical variables and their impact on predicted values
+cat_AIS <- ggplot(data = combined_data, mapping = aes(x = Variable, y = fit, color = Predictor)) +
+  geom_jitter(height = 0.05) +
+  facet_wrap(~Predictor, scales = "free_x") +
+  labs(y = "Predicted AIS", x = "", title = "Impact of Categorical Predictors on AIS") +
+  theme(plot.title = element_text(hjust = 0.5, size = 10))+
+  geom_hline(yintercept = 6.92)+
+  geom_hline(yintercept = 7.95, linetype = 2)+
+  geom_hline(yintercept = 8.62)
+  guides()
+
+#plot continuous variables and their impact on pred. values
+cont_AIS <- ggplot(data = combined_data_cont, mapping = aes(x = Variable, y = fit, color = Predictor)) +
+  geom_line()+
+  facet_wrap(~Predictor, scales = "free_x")+
+  labs(y = "Predicted AIS", title = "Impact of Continuous Predictors on AIS", x = "") +
+  theme(plot.title = element_text(hjust = 0.5, size = 10))+
+  guides()
+
+
+#### Analysis for PCS model ####
+ESS_data <- generate_data(model = PCS_model, response = "SF36.PCS", predictor = "Epworth.Sleepiness.Scale")
+BSS_data <-generate_data(model = PCS_model, response = "SF36.PCS", predictor = "Berlin.Sleepiness.Scale")
+AIS_data <- generate_data(model = PCS_model, response = "SF36.PCS", predictor = "Athens.Insomnia.Scale")
+
+
+#create a new dataframe with combined data (to plot with facets)
+combined_data <- data.frame(Predictor = "Berlin Sleepiness Scale",
+                            Variable = BSS_data$Berlin.Sleepiness.Scale %>%
+                              fct_recode(Sleep_Obstuction = "1", Normal_Sleep = "0"),
+                            fit = BSS_data$predicted_values
+                            )
+
+combined_data_cont <- rbind(
+  data.frame(Predictor = "ESS",
+             Variable = ESS_data$Epworth.Sleepiness.Scale,
+             fit = ESS_data$predicted_values
+  ),
+  data.frame(Predictor = "AIS",
+             Variable = AIS_data$Athens.Insomnia.Scale,
+             fit = AIS_data$predicted_values
+  )
+)
+
+# Plot both categorical variables and their impact on predicted values
+cat_PCS <- ggplot(data = combined_data, mapping = aes(x = Variable, y = fit, color = Predictor)) +
+  geom_jitter(height = 0.05) +
+  facet_wrap(~Predictor, scales = "free_x") +
+  labs(y = "Predicted PCS", x = "", title = "Impact of Categorical Predictors on PCS") +
+  theme(plot.title = element_text(hjust = 0.5, size = 10))
+
+#plot continuous variables and their impact on pred. values
+cont_PCS <- ggplot(data = combined_data_cont, mapping = aes(x = Variable, y = fit, color = Predictor)) +
+  geom_line()+
+  facet_wrap(~Predictor)+
+  labs(y = "Predicted PCS", title = "Impact of Continuous Predictors on PCS", x = "") +
+  theme(plot.title = element_text(hjust = 0.5, size = 10))+
+  guides()
+
+
+#### Analysis for MCS model ####
+ESS_data <- generate_data(model = MCS_model, response = "SF36.MCS", predictor = "Epworth.Sleepiness.Scale")
+BSS_data <-generate_data(model = MCS_model, response = "SF36.MCS", predictor = "Berlin.Sleepiness.Scale")
+AIS_data <- generate_data(model = MCS_model, response = "SF36.MCS", predictor = "Athens.Insomnia.Scale")
+
+
+#create a new dataframe with combined data (to plot with facets)
+combined_data <- data.frame(Predictor = "Berlin Sleepiness Scale",
+                            Variable = BSS_data$Berlin.Sleepiness.Scale %>%
+                              fct_recode(Sleep_Obstuction = "1", Normal_Sleep = "0"),
+                            fit = BSS_data$predicted_values
+)
+
+combined_data_cont <- rbind(
+  data.frame(Predictor = "ESS",
+             Variable = ESS_data$Epworth.Sleepiness.Scale,
+             fit = ESS_data$predicted_values
+  ),
+  data.frame(Predictor = "AIS",
+             Variable = AIS_data$Athens.Insomnia.Scale,
+             fit = AIS_data$predicted_values
+  )
+)
+
+# Plot both categorical variables and their impact on predicted values
+cat_MCS <- ggplot(data = combined_data, mapping = aes(x = Variable, y = fit, color = Predictor)) +
+  geom_jitter(height = 0.001) +
+  facet_wrap(~Predictor, scales = "free_x") +
+  labs(y = "Predicted MCS", x = "", title = "Impact of Categorical Predictors on MCS") +
+  theme(plot.title = element_text(hjust = 0.5, size = 10))
+
+#plot continuous variables and their impact on pred. values
+cont_MCS <- ggplot(data = combined_data_cont, mapping = aes(x = Variable, y = fit, color = Predictor)) +
+  geom_line()+
+  facet_wrap(~Predictor)+
+  labs(y = "Predicted MCS", title = "Impact of Continuous Predictors on MCS", x = "") +
+  theme(plot.title = element_text(hjust = 0.5, size = 10))+
+  guides()

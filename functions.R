@@ -6,6 +6,7 @@
 generate_data <- function(model = "", response = "", predictor ="", data = imputed_sleep_data){
   #alter all other columns to be the mean or a constant level value
   
+  
   #select all columns except the predictor and response
   temp_data <- data %>% 
     select(!c({{response}}, {{predictor}}))
@@ -35,7 +36,14 @@ generate_data <- function(model = "", response = "", predictor ="", data = imput
   new_data <- cbind(data,temp_data)
   
   #use the model to predict fitted values
-  predicted_values <- predict(model, newdata = new_data, int = "c")
+  
+  if(class(new_data[[response]]) == "factor"){
+    predicted_values <- predict(model, newdata = new_data, type = "response")
+    predicted_values <- ifelse(predicted_values >= 0.5, 1, 0)
+  } else{
+    predicted_values <- predict(model, newdata = new_data)
+  }
+  
   
   #add the predicted values to the df
   new_data <- cbind(new_data, predicted_values)
