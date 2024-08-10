@@ -159,6 +159,7 @@ prevalence <- sleep_data %>%
     Athens.Insomnia.Scale > 5.5 ~ 1,
     Athens.Insomnia.Scale <= 5.5 ~ 0
   ),
+  #convert to character first to remove factor levels, and then convert to integer
   BSS = as.integer(as.character(Berlin.Sleepiness.Scale))
 ) %>% 
   select(ESS, BSS, AthensSS)
@@ -272,25 +273,39 @@ summary(ESS_model)
 ##### Logistic regression model for BSS ######
 
 #calculate p; number of predictors
-# for logistic regression: p<m/15 where m = number of events
-#calculate:
-max_predictors_BSS <- as.integer(sleep_data %>%  count(Berlin.Sleepiness.Scale) %>% filter(Berlin.Sleepiness.Scale == 1) %>% pull(n)/15)
+# for logistic regression: p<m/15 where m = the smallest class
 
+
+
+
+#find the smallest class, 1s (sleep apnea)
+smallest_class <- table(na.omit(sleep_data$Berlin.Sleepiness.Scale))
+
+#calculate:
+max_predictors_BSS <- sleep_data %>% 
+  select(Berlin.Sleepiness.Scale) %>% 
+  filter(Berlin.Sleepiness.Scale == 1) %>% 
+  nrow()/15
+
+max_predictors_BSS <- as.integer(max_predictors_BSS)
+
+max_predictors_BSS <- sleep_data %>% select(Berlin.Sleepiness.Scale)
 length(sleep_data$Berlin.Sleepiness.Scale[sleep_data$Berlin.Sleepiness.Scale == 1])
 length(sleep_data$Berlin.Sleepiness.Scale)
-#initial model with all predictors, we will research and figure out what to include/not to include
+
+#initial model with all predictors with strong clinical evidence
 BSS_model <- glm(Berlin.Sleepiness.Scale ~ Gender + Age + BMI + Time.from.transplant +  Depression,
                  family = "binomial",
                  data = imputed_sleep_data)
 
-#could not add liver diagnosis, it would exceed maximum amount of degrees of freedom allowed for this model 
+#Try adding models with weaker clinical evidence
+#could not add liver diagnosis, it would exceed maximum amount of degrees of freedom allowed for this model, only adding Renal Failure
 BSS_model2 <- glm(Berlin.Sleepiness.Scale ~ Gender + Age + BMI + Time.from.transplant +  Depression + Renal.Failure,
                   family = "binomial",
                   data = imputed_sleep_data)
 
+#simpler model is better
 anova(BSS_model,BSS_model2)
-
-
 
 #summary
 summary(BSS_model)
@@ -310,19 +325,22 @@ summary(BSS_model)
 #calculate:
 max_predictors_AthensSS <- as.integer(length(sleep_data$Athens.Insomnia.Scale)/15)
 
-#initial model with all predictors, we will research and figure out what to include/not to include
+#initial model with clinically relevant predictors found in literature
 AthensSS_model <-lm(Athens.Insomnia.Scale ~ Gender + Age + BMI + Time.from.transplant + Depression,
                data = imputed_sleep_data)
 
+#Try adding liver diagnosis
 AthensSS_model2 <-lm(Athens.Insomnia.Scale ~ Gender + Age + BMI + Time.from.transplant + Depression + Liver.Diagnosis,
                     data = imputed_sleep_data)
 
+
+#Simpler model is better
 anova(AthensSS_model,AthensSS_model2)
 
 AIC(AthensSS_model)
 AIC(AthensSS_model2)
 
-
+#Try adding renal failure
 AthensSS_model3 <- lm(Athens.Insomnia.Scale ~ Gender + Age + BMI + Time.from.transplant + Depression + Renal.Failure,
                       data = imputed_sleep_data)
 
