@@ -107,3 +107,15 @@ MCS_table <- tbl_regression(PCS_model,
   )
 MCS_table
 
+
+#prevalences
+prevalences_table <- prevalences %>%
+  gt() %>% 
+  fmt_number(decimals = 1) %>% 
+  cols_label(percent = "Prevalence of Sleep Disturbance (%)") %>% 
+  tab_header(
+    title = "Prevalence of Sleep Disturbance",
+    subtitle = "In post liver transplant patients measured by different scales"
+  )
+prevalences_table
+

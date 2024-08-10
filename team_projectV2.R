@@ -189,8 +189,15 @@ for (name in names(prevalence)) {
 }
 
 #set the row names of the df
-row.names(prevalences) <- names(prevalence)
-prevalences
+row.names(prevalences) <- c("ESS", "BSS", "AIS")
+#transpose
+prevalences <- as.data.frame(t(prevalences))
+
+#format for table presentation
+prevalences <- data.frame(Scale = names((prevalences)),
+                          Percent = t(prevalences[3,]))
+
+
 
 #### Imputation ####
 # we need to do something to deal with the missing data
@@ -288,10 +295,6 @@ max_predictors_BSS <- sleep_data %>%
   nrow()/15
 
 max_predictors_BSS <- as.integer(max_predictors_BSS)
-
-max_predictors_BSS <- sleep_data %>% select(Berlin.Sleepiness.Scale)
-length(sleep_data$Berlin.Sleepiness.Scale[sleep_data$Berlin.Sleepiness.Scale == 1])
-length(sleep_data$Berlin.Sleepiness.Scale)
 
 #initial model with all predictors with strong clinical evidence
 BSS_model <- glm(Berlin.Sleepiness.Scale ~ Gender + Age + BMI + Time.from.transplant +  Depression,
