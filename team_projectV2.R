@@ -148,7 +148,9 @@ fluxplot(sleep_data, labels = F)
 # identify percentage of patients that have sleep disturbance according to each metric
 
 #create a binary metric and add to the table based on cutoff values
-prevalence <- sleep_data %>% mutate(
+prevalence <- sleep_data %>%
+  na.omit(sleep_data) %>% 
+  mutate(
   ESS = case_when(
     Epworth.Sleepiness.Scale > 10 ~ 1,
     Epworth.Sleepiness.Scale <= 10 ~ 0
@@ -157,7 +159,7 @@ prevalence <- sleep_data %>% mutate(
     Athens.Insomnia.Scale > 5.5 ~ 1,
     Athens.Insomnia.Scale <= 5.5 ~ 0
   ),
-  BSS = as.integer(Berlin.Sleepiness.Scale)
+  BSS = as.integer(as.character(Berlin.Sleepiness.Scale))
 ) %>% 
   select(ESS, BSS, AthensSS)
 
@@ -170,16 +172,15 @@ rownames(prevalences) <- NULL
 #loop through the metrics, summarize them and append to empty df
 for (name in names(prevalence)) {
   
-  #remove the NAs so they dont skew the count
+  #Select relevant columns
   prevalence_temp <- prevalence %>%
-    select(all_of(name)) %>% 
-    na.omit()
+    select(all_of(name))
   
   #summarize and calculate how many patients have sleep issues and how many dont
   prevalence_temp <- prevalence_temp %>%
-    summarise(insomnia = sum(prevalence_temp[[all_of(name)]]),
+    summarise(sleep_trouble = sum(prevalence_temp[[all_of(name)]]),
               total = n(),
-              percent = insomnia/total*100)
+              percent = sleep_trouble/total*100)
   
   #Add the data to a df
   prevalences <- base::rbind(prevalences, prevalence_temp)
