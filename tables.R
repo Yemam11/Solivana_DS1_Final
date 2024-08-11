@@ -42,6 +42,7 @@ ESS_table <- tbl_regression(ESS_model,
                             intercept = T) %>%
   bold_p() %>%
   add_vif() %>% 
+  add_glance_table(include = c(adj.r.squared, AIC)) %>% 
   as_gt() %>% 
   tab_header(
     title = "Epworth Sleepiness Scale",
@@ -53,9 +54,11 @@ ESS_table
 #BSS
 BSS_table <- tbl_regression(BSS_model,
                             label = list(Time.from.transplant = "Time from Transplant (Years)"),
-                            intercept = T) %>% 
+                            intercept = T,
+                            ) %>% 
   bold_p() %>%
-  add_vif() %>% 
+  add_vif() %>%
+  add_glance_table(include = c(AIC)) %>%
   as_gt() %>% 
   tab_header(
     title = "Berlin Sleepiness Scale",
@@ -63,12 +66,28 @@ BSS_table <- tbl_regression(BSS_model,
   )
 BSS_table
 
+BSS_exp_table <- tbl_regression(BSS_model,
+                            label = list(Time.from.transplant = "Time from Transplant (Years)"),
+                            intercept = T,
+                            conf.int = F,
+                            exponentiate = T
+                            
+) %>% 
+  bold_p() %>%
+  as_gt() %>%
+  tab_header(
+    title = "Berlin Sleepiness Scale",
+    subtitle = "Odds Ratio Summary"
+  )
+BSS_exp_table
+
 #AthensSS
 AthensSS_table <- tbl_regression(AthensSS_model,
                             label = list(Time.from.transplant = "Time from Transplant (Years)"),
                             intercept = T) %>%
   bold_p() %>%
-  add_vif() %>% 
+  add_vif() %>%
+  add_glance_table(include = c(adj.r.squared, AIC)) %>%
   as_gt() %>% 
   tab_header(
     title = "Athens Insomnia Scale",
@@ -85,6 +104,7 @@ PCS_table <- tbl_regression(PCS_model,
                             intercept = T) %>%
   bold_p() %>%
   add_vif() %>% 
+  add_glance_table(include = c(adj.r.squared, AIC)) %>%
   as_gt() %>% 
   tab_header(
     title = "SF36 Physical Component Summary",
@@ -93,13 +113,14 @@ PCS_table <- tbl_regression(PCS_model,
 PCS_table
 
 #MCS
-MCS_table <- tbl_regression(PCS_model,
+MCS_table <- tbl_regression(MCS_model,
                             label = list(Epworth.Sleepiness.Scale = "ESS",
                                          Berlin.Sleepiness.Scale = "BSS",
                                          Athens.Insomnia.Scale = "AIS"),
                             intercept = T) %>%
   bold_p() %>%
-  add_vif() %>% 
+  add_vif() %>%
+  add_glance_table(include = c(adj.r.squared, AIC)) %>%
   as_gt() %>% 
   tab_header(
     title = "SF36 Mental Component Summary",
@@ -118,4 +139,5 @@ prevalences_table <- prevalences %>%
     subtitle = "In post liver transplant patients measured by different scales"
   )
 prevalences_table
+
 
