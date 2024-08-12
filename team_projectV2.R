@@ -579,7 +579,7 @@ cat_bss <- ggplot(data = combined_data, mapping = aes(x = Variable, y = fit, col
 
 #plot continuous variables and their impact on pred. values
 cont_bss <- ggplot(data = combined_data_cont, mapping = aes(x = Variable, y = fit, color = Predictor)) +
-  geom_smooth(method = lm, se = F) +
+  geom_line(method = lm, se = F) +
   facet_wrap(~Predictor)+
   labs(y = "Predicted Probability of Sleep Disturbance", title = "Impact of Continuous Predictors on BSS", x = "") +
   theme(plot.title = element_text(hjust = 0.5, size = 10))
