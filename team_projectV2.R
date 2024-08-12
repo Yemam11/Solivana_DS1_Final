@@ -478,7 +478,7 @@ combined_data_cont <- rbind(
              fit = BMI_data$predicted_values
   ),
   data.frame(Predictor = "Time.from.transplant",
-             Variable = BMI_data$BMI,
+             Variable = Transplant_data$Time.from.transplant,
              fit = Transplant_data$predicted_values
   )
   
@@ -538,7 +538,7 @@ combined_data_cont <- rbind(
              fit = BMI_data$predicted_values
   ),
   data.frame(Predictor = "Time.from.transplant",
-             Variable = BMI_data$BMI,
+             Variable = Transplant_data$Time.from.transplant,
              fit = Transplant_data$predicted_values
   )
   
@@ -566,7 +566,7 @@ Depression_data <- generate_data(model = AthensSS_model, response = "Athens.Inso
 Gender_data <-generate_data(model = AthensSS_model, response = "Athens.Insomnia.Scale", predictor = "Gender")
 BMI_data <- generate_data(model = AthensSS_model, response = "Athens.Insomnia.Scale", predictor = "BMI")
 Age_data <- generate_data(model = AthensSS_model, response = "Athens.Insomnia.Scale", predictor = "Age")
-Transplant_data <- generate_data(model = ESS_model, response = "Athens.Insomnia.Scale", predictor = "Time.from.transplant")
+Transplant_data <- generate_data(model = AthensSS_model, response = "Athens.Insomnia.Scale", predictor = "Time.from.transplant")
 
 
 #create a new dataframe with combined data (to plot with facets)
@@ -593,7 +593,7 @@ combined_data_cont <- rbind(
              fit = BMI_data$predicted_values
   ),
   data.frame(Predictor = "Time.from.transplant",
-             Variable = BMI_data$BMI,
+             Variable = Transplant_data$Time.from.transplant,
              fit = Transplant_data$predicted_values
   )
   
