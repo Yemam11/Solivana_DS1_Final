@@ -164,6 +164,8 @@ prevalence <- sleep_data %>%
 ) %>% 
   select(ESS, BSS, AthensSS)
 
+
+sd()
 #determine the prevalence
 
 #create empty data frame
@@ -379,8 +381,6 @@ ggplot(data = heteroscedasticity_AIS, mapping = aes(sample = AIS_resid))+
 
 summary(AthensSS_model)
 
-
-####################
 #### PCS Model ####
 
 # use lm of AIS, BSS, ESS to predict PCS/MCS
