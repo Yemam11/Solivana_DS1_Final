@@ -2,12 +2,20 @@
 # Authors: Youssef Emam, Hasan Abdo, Angela Bakaj
 # Run the main file to ensure you have all the necessary data to generate the plots
 
+
 #### Data generation function ####
+#Use the generate_data function from functions.R
+# This will take a model, a response variable, and a predictor and create a new dataset
+# All variables except the response and predictor will be held constant, either at the mean or the refernce value
+# This newdata will be used to predict the response variable using the model given to the funciton
+# The predicted values are appended to the data and returned from the function
+
+#Takes a model object, response variable, and predictor variable, and data as inputs
 generate_data <- function(model = "", response = "", predictor ="", data = imputed_sleep_data){
+  
   #alter all other columns to be the mean or a constant level value
-  
-  
   #select all columns except the predictor and response
+  # the {{ }} "embrace" converts the character string into an input that the select function understands
   temp_data <- data %>% 
     select(!c({{response}}, {{predictor}}))
   
@@ -33,6 +41,7 @@ generate_data <- function(model = "", response = "", predictor ="", data = imput
     }
   }
   
+  #join the unchanged variables with the changed variables
   new_data <- cbind(data,temp_data)
   
   #use the model to predict fitted values

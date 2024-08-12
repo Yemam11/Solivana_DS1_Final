@@ -2,6 +2,11 @@
 # Authors: Youssef Emam, Hasan Abdo, Angela Bakaj
 # Date: Aug. 12, 2024
 # to run: set wd to main repo page (Solivana_DS1_Final folder)
+# This file requires functions.R to be run before in order to run properly
+# The functions.R file is sourced below, but make sure this file and the functions file are both together in the working directory
+# The tables.R file just creates some of the tables used in the report
+# To run tables.R ensure that this file and functions.R have been run completely
+
 
 #initialize libaries
 library(tidyverse)
@@ -98,6 +103,7 @@ for (col in cols){
     fct_recode(Yes = "1", No = "0")
 }
 
+#recode the names of the factors
 summary_data$Berlin.Sleepiness.Scale <-summary_data$Berlin.Sleepiness.Scale %>% 
   fct_recode(Sleep.Apnea = "1", Normal = "0")
 
@@ -165,7 +171,6 @@ prevalence <- sleep_data %>%
   select(ESS, BSS, AthensSS)
 
 
-sd()
 #determine the prevalence
 
 #create empty data frame
@@ -192,6 +197,7 @@ for (name in names(prevalence)) {
 
 #set the row names of the df
 row.names(prevalences) <- c("ESS", "BSS", "AIS")
+
 #transpose
 prevalences <- as.data.frame(t(prevalences))
 
@@ -238,26 +244,29 @@ summary(imputed_sleep_data)
 # for logistic regression: p<m/15 where m = number of events
 #calculate:
 
-#ask which dataset to use (imputed vs not)
+#calculate the maximum df for the model
 max_predictors_ESS <- as.integer(length(sleep_data$Epworth.Sleepiness.Scale)/15)
 
-# These are the predictors to used
+# These are the predictors to be used based on the literature search
 ESS_model <-lm(Epworth.Sleepiness.Scale ~ Gender + Age + BMI + Depression + Time.from.transplant,
                data = imputed_sleep_data)
 
-
+#Try adding liver diagnosis
 ESS_model2 <- lm(Epworth.Sleepiness.Scale ~ Gender + Age + BMI + Depression + Time.from.transplant + Liver.Diagnosis,
                  data = imputed_sleep_data)
 
 
+#Simpler model is better
 anova(ESS_model,ESS_model2)
 AIC(ESS_model)
 AIC(ESS_model2)
 
 
+#Try adding renal failure
 ESS_model3 <- lm(Epworth.Sleepiness.Scale ~ Gender + Age + BMI + Depression + Time.from.transplant + Renal.Failure, 
                  data = imputed_sleep_data)
 
+#Simpler model is better
 anova(ESS_model,ESS_model3)
 AIC(ESS_model)
 AIC(ESS_model3)
@@ -289,9 +298,6 @@ summary(ESS_model)
 #calculate p; number of predictors
 # for logistic regression: p<m/15 where m = the smallest class
 
-
-
-
 #find the smallest class, 1s (sleep apnea)
 smallest_class <- table(na.omit(sleep_data$Berlin.Sleepiness.Scale))
 
@@ -301,6 +307,7 @@ max_predictors_BSS <- sleep_data %>%
   filter(Berlin.Sleepiness.Scale == 1) %>% 
   nrow()/15
 
+#convert to integer
 max_predictors_BSS <- as.integer(max_predictors_BSS)
 
 #initial model with all predictors with strong clinical evidence
@@ -354,6 +361,7 @@ AIC(AthensSS_model2)
 AthensSS_model3 <- lm(Athens.Insomnia.Scale ~ Gender + Age + BMI + Time.from.transplant + Depression + Renal.Failure,
                       data = imputed_sleep_data)
 
+#Simpler model is better
 anova(AthensSS_model,AthensSS_model3)
 AIC(AthensSS_model)
 AIC(AthensSS_model3)
@@ -413,6 +421,7 @@ summary(PCS_model)
 
 #### MCS Model ####
 
+#create model for MCS
 MCS_model <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale + Berlin.Sleepiness.Scale + Athens.Insomnia.Scale,
                 data = imputed_sleep_data)
 
@@ -445,6 +454,11 @@ summary(MCS_model)
 
 #### Analysis for ESS_model ####
 
+#Use the generate_data function from functions.R
+# This will take a model, a response variable, and a predictor and create a new dataset
+# All variables except the response and predictor will be held constant, either at the mean or the refernce value
+# This newdata will be used to predict the response variable using the model given to the funciton
+# The predicted values are appended to the data and returned from the function
 Depression_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "Depression")
 Gender_data <-generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "Gender")
 BMI_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "BMI")
@@ -452,20 +466,27 @@ Age_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scal
 Transplant_data <- generate_data(model = ESS_model, response = "Epworth.Sleepiness.Scale", predictor = "Time.from.transplant")
 
 
-#create a new dataframe with combined data (to plot with facets)
+#create a new dataframe with combined data that we will plot (to plot with facets)
 #categorical
 combined_data <- rbind(
+  
+  #One predictor row, one row with the data, and one row with the fitted values
   data.frame(Predictor = "Gender",
              Variable = Gender_data$Gender %>%
                fct_recode(Male = "1", Female = "2"),
              fit = Gender_data$predicted_values
              ),
+  
+  #bind a data frame with the same structure but with depression data
   data.frame(Predictor = "Depression",
              Variable = Depression_data$Depression %>% 
                fct_recode(Yes = "1", No = "0"),
              fit = Depression_data$predicted_values
              )
 )
+
+#Take a look
+combined_data
 
 #Same for continuous data
 combined_data_cont <- rbind(
@@ -502,10 +523,12 @@ cont_ess <- ggplot(data = combined_data_cont, mapping = aes(x = Variable, y = fi
   theme(plot.title = element_text(hjust = 0.5, size = 10))+
   guides()
 
-#Place plots side by side
+#Place plots side by side, this is commented out
 # cat_ess | cont_ess
 
 #### Analysis for BSS_model ####
+# The process above will be repeated for all models
+
 Depression_data <- generate_data(model = BSS_model, response = "Berlin.Sleepiness.Scale", predictor = "Depression")
 Gender_data <-generate_data(model = BSS_model, response = "Berlin.Sleepiness.Scale", predictor = "Gender")
 BMI_data <- generate_data(model = BSS_model, response = "Berlin.Sleepiness.Scale", predictor = "BMI")
